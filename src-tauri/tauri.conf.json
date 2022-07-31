@@ -7,7 +7,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "launcher",
+    "productName": "axolotl-client-launch",
     "version": "0.1.0"
   },
   "tauri": {

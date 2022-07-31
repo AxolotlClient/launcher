@@ -1,5 +1,5 @@
 {
-  "name": "launcher",
+  "name": "axolotl-client-launcher",
   "scripts": {
     "tauri": "tauri"
   },
