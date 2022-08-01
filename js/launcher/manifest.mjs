@@ -1,7 +1,7 @@
-import { http } from "@tauri-apps/api";
+import * as util from "../util.mjs";
 const DEFAULT_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
 
-export default class Manifest {
+export class Manifest {
 
     data;
 
@@ -10,15 +10,64 @@ export default class Manifest {
     }
 
     static async fetch(url) {
-        url ??= DEFAULT_URL;
+        return new Manifest(await util.getData(url ?? DEFAULT_URL));
+    }
 
-        const result = await http.fetch(url);
+    getLatestRelease() {
+        return this.data.latest.release;
+    }
 
-        if (result.ok) {
-            return result.data;
+    getLatestSnapshot() {
+        return this.data.latest.snapshot;
+    }
+
+    findVersion(id) {
+        return this.getVersions().find((version) => version.getId() == id);
+    }
+
+    getVersions() {
+        return this.data.versions.map((data) => new VersionHandle(data));
+    }
+
+}
+
+export class VersionHandle {
+
+    data;
+    cached;
+
+    constructor(data) {
+        this.data = data;
+    }
+
+    getId() {
+        return this.data.id;
+    }
+
+    getType() {
+        return this.data.type;
+    }
+
+    getUrl() {
+        return this.data.url;
+    }
+
+    async fetch() {
+        if (!this.cached) {
+            return this.cached = new Version(await util.getData(this.getUrl()));
         }
 
-        throw new Error("Got status code " + result.status);
+        return this.cached;
+    }
+
+}
+
+export class Version {
+
+    data;
+
+    constructor(data) {
+        this.data = data;
     }
 
 }
