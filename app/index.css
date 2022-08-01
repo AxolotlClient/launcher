@@ -1,12 +1,7 @@
 body {
-    position: relative;
-    height: 500px;
-    margin-top: 50px;
     font-family: 'Fira Sans', sans-serif;
     text-align: center;
-    /*background-color: #35353f;*/
-    background: url("assets/bg.jpg");
-    background-position: center;
+    background: url("assets/bg.jpg") center no-repeat;
     background-size: cover;
 }
 
@@ -14,16 +9,15 @@ button {
     margin-bottom: 10px;
     height: 50px;
     width: 250px;
-    background-color: #aa00ff;
+    background-color: #aa406c;
     cursor: pointer;
     border: none;
     color: white;
     padding: 15px 32px;
     margin-right: 10px;
     margin-left: 10px;
-    text-align: center;
+    margin-top: 10px;
     text-decoration: none;
-    display: inline-block;
     font-size: 16px;
     border-radius: 10px;
     transition-duration: 0.4s;
@@ -34,7 +28,13 @@ button:hover {
     color: white;
 }
 
-.play {
+.main {
+    height: 100%;
     position: relative;
-    bottom: 4%;
+    overflow: hidden;
+}
+
+.main .play {
+    position: relative;
+    top: 80vh;
 }
