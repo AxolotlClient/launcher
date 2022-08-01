@@ -22,3 +22,4 @@ export const DOT_MINECRAFT = dotMinecraft;
 export const ASSETS = await path.join(DOT_MINECRAFT, "assets");
 export const LIBRARIES = await path.join(DOT_MINECRAFT, "libraries");
 export const VERSIONS = await path.join(DOT_MINECRAFT, "versions");
+export const MODS = await path.join(DOT_MINECRAFT, "axolotlclient_mods"); //We should keep a reference to each file to check their versions against the modrinth api

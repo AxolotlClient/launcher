@@ -9,3 +9,11 @@ export async function getData(url) {
 
     throw new Error("Got status code " + result.status);
 }
+
+export function gameVersionEquals(version, version2) {
+    if (version.split(".", 1)[0] === version2.split(".", 1)[0] &&
+        version.split(".", 1)[1] === version2.split(".", 1)[1]) {
+        return true;
+    }
+    return false;
+}
