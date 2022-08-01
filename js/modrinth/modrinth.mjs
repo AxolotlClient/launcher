@@ -9,7 +9,7 @@ export async function downloadMod(slug, gameVersion, path) {
 
     let mod_version;
     for (v in modData) {
-        mc_versions = v.game_versions;
+        let mc_versions = v.game_versions;
         for (version in mc_versions) {
             if (util.gameVersionEquals(version, gameVersion)) {
                 console.log("Found compatible mod version!")
@@ -34,9 +34,9 @@ export async function downloadMod(slug, gameVersion, path) {
         return;
     }
 
-    file = path.join(path, mod_version.file_name);
+    let file = path.join(path, mod_version.file_name);
     if (!fsExtra.exists(file)) {
-        data = await http.fetch(url);
+        let data = await http.fetch(url);
         fs.writeFile(file, data);
         console.log("Downloaded Mod " + mod_version + " to file " + file);
     } else {
