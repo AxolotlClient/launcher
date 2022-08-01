@@ -4,14 +4,18 @@
         "beforeBuildCommand": "",
         "beforeDevCommand": "",
         "devPath": "../app",
-        "distDir": "../dist"
+        "distDir": "../app",
+        "withGlobalTauri": true
     },
     "package": {
-        "productName": "axolotl-client-launch",
+        "productName": "axolotl-client-launcher",
         "version": "0.1.0"
     },
     "tauri": {
         "allowlist": {
+            "http": {
+                "scope": [ "https://*.mojang.com/*" ]
+            },
             "all": true
         },
         "bundle": {
