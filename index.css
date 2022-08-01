@@ -38,3 +38,22 @@ button:hover {
     position: relative;
     top: 80vh;
 }
+
+.main .open_settings {
+    cursor: pointer;
+    position: absolute;
+    right: 20px;
+    top: 30px;
+}
+
+.settings {
+    height: 100%;
+    overflow: hidden;
+}
+
+.settings .close_settings {
+    cursor: pointer;
+    position: absolute;
+    right: 20px;
+    top: 30px;
+}
