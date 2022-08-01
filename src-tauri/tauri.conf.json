@@ -1,10 +1,10 @@
 {
     "$schema": "../node_modules/@tauri-apps/cli/schema.json",
     "build": {
-        "beforeBuildCommand": "",
-        "beforeDevCommand": "",
-        "devPath": "../app",
-        "distDir": "../app",
+        "beforeBuildCommand": "npx vite build",
+        "beforeDevCommand": "npx vite",
+        "devPath": "http://localhost:5173",
+        "distDir": "../dist",
         "withGlobalTauri": true
     },
     "package": {
@@ -15,6 +15,18 @@
         "allowlist": {
             "http": {
                 "scope": [ "https://*.mojang.com/*" ]
+            },
+            "fs": {
+                "all": false,
+                "copyFile": false,
+                "createDir": false,
+                "readDir": false,
+                "readFile": false,
+                "removeDir": false,
+                "removeFile": false,
+                "renameFile": false,
+                "scope": [ "**" ],
+                "writeFile": false
             },
             "all": true
         },

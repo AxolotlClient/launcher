@@ -1,4 +1,4 @@
-const { http } = window.__TAURI__;
+import { http } from "@tauri-apps/api";
 const DEFAULT_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
 
 export default class Manifest {

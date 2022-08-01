@@ -1,4 +1,5 @@
-const { os, path } = window.__TAURI__;
+import { os, path } from "@tauri-apps/api";
+
 const platformName = await os.platform();
 const home = await path.homeDir();
 const data = await path.dataDir();
