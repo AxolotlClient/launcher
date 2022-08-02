@@ -3,7 +3,7 @@ import * as fsExtra from "tauri-plugin-fs-extra-api";
 import { fs, path } from "@tauri-apps/api";
 import { http } from "@tauri-apps/api";
 
-export async function downloadModFromSlug(slug, gameVersion, path) {
+export async function downloadModFromSlug(slug, gameVersion, filePath) {
     let modData = util.getData("https://api.modrinth.com/api/v2/project/" + slug + "/version");
 
     for (v in modData) {
@@ -11,7 +11,7 @@ export async function downloadModFromSlug(slug, gameVersion, path) {
         for (version in mc_versions) {
             if (util.gameVersionEquals(version, gameVersion)) {
                 console.log("Found compatible mod version!")
-                return downloadMod(v, path);
+                return downloadMod(v, filePath);
             }
         }
     }
@@ -19,12 +19,12 @@ export async function downloadModFromSlug(slug, gameVersion, path) {
     console.error("Compatible version could not be found!");
 }
 
-export async function downloadModFromVersionId(versionId, path) {
-    return downloadMod(util.getData("https://api.modrinth.com/api/v2/version" + versionId), path);
+export async function downloadModFromVersionId(versionId, filePath) {
+    return downloadMod(util.getData("https://api.modrinth.com/api/v2/version" + versionId), filePath);
 }
 
 
-async function downloadMod(modrinthVersion, path) {
+async function downloadMod(modrinthVersion, filePath) {
     let url;
     for (file in modrinthVersion.files) {
         if (file.primary == true) {
@@ -36,7 +36,7 @@ async function downloadMod(modrinthVersion, path) {
         return;
     }
 
-    let file = path.join(path, modrinthVersion.file_name);
+    let file = path.join(filePath, modrinthVersion.file_name);
     if (!fsExtra.exists(file)) {
         let data = await http.fetch(url);
         fs.writeFile(file, data);

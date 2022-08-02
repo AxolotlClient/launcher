@@ -60,6 +60,6 @@ button:hover {
 .settings .close_settings {
     cursor: pointer;
     position: absolute;
-    right: 20px;
-    top: 30px;
+    right: 28px;
+    top: 38px;
 }

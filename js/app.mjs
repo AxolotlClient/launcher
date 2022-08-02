@@ -1,10 +1,14 @@
 import Launcher from "./launcher/launcher.mjs";
-import * as config from "./config/config.mjs";
+/*import * as config from "./config/config.mjs"; // This is somehow broken, I have no idea how to fix it.
 
-document.addEventListener('load', () => {
-    config.load();
-    config.save();
-})
+document.onload = async() => {
+    try {
+        await config.load();
+        await config.save();
+    } catch (error) {
+        console.error(error);
+    }
+}*/
 
 const playButton = document.querySelector(".play");
 const launcher = new Launcher();
@@ -24,8 +28,9 @@ const settings = document.querySelector(".settings");
 
 settingsButton.onclick = () => {
     try {
-        main.style.visibility = "hidden";
-        settings.style.visibility = "visible";
+        main.style.display = "none";
+        settings.style.display = "block";
+        console.log("Opened Settings");
     } catch (error) {
         console.error(error);
     }
@@ -35,8 +40,9 @@ const exitButton = document.querySelector(".close_settings");
 
 exitButton.onclick = () => {
     try {
-        main.style.visibility = "visible";
-        settings.style.visibility = "hidden";
+        main.style.display = "block";
+        settings.style.display = "none";
+        console.log("Closed Settings");
     } catch (error) {
         console.error(error);
     }

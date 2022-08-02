@@ -16,7 +16,7 @@ config = {
 
     settings: {
         java: {
-            jre8: "", // Need to look up MC's runtime path!
+            jre8: "", // Need to look up MC's runtime path, or search for a system install!
             jre17: "",
             minMem: "2G",
             maxMem: "2G",
@@ -44,7 +44,7 @@ config = {
     versionConfigs: {}
 }
 
-export function save() {
+export async function save() {
     if (!fsExtra.exists(config.settings.launcher.configPath)) {
         fs.createDir(config.settings.launcher.configPath);
     }
@@ -52,7 +52,7 @@ export function save() {
     fs.writeTextFile(config.settings.launcher.configPath, JSON.stringify(config));
 }
 
-export function load() {
+export async function load() {
     if (fsExtra.exists(config.settings.launcher.configPath)) {
         config = JSON.parse(fs.readTextFile(config.settings.launcher.configPath));
     }
