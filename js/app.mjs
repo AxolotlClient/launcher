@@ -1,7 +1,12 @@
 import Launcher from "./launcher/launcher.mjs";
+import * as config from "./config/config.mjs";
+
+document.addEventListener('load', () => {
+    config.load();
+    config.save();
+})
 
 const playButton = document.querySelector(".play");
-
 const launcher = new Launcher();
 
 playButton.onclick = async() => {

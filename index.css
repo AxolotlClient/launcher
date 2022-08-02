@@ -6,6 +6,7 @@ body {
     max-width: 100%;
     max-height: 100%;
     overflow: hidden;
+    transition: ease .2s;
 }
 
 button {
@@ -23,7 +24,7 @@ button {
     text-decoration: none;
     font-size: 16px;
     border-radius: 10px;
-    transition-duration: 0.4s;
+    transition: ease-in-out .3s;
 }
 
 button:hover {
@@ -40,6 +41,7 @@ button:hover {
 .main .play {
     position: relative;
     top: 80vh;
+    transition: ease-in-out .4s;
 }
 
 .main .open_settings {
@@ -52,6 +54,7 @@ button:hover {
 .settings {
     height: 100%;
     overflow: hidden;
+    transition: ease .2s;
 }
 
 .settings .close_settings {
