@@ -1,22 +1,21 @@
-import * as util from "../util.mjs";
+import * as util from "../util/util.mjs";
 import * as fsExtra from "tauri-plugin-fs-extra-api";
-import { fs, path } from "@tauri-apps/api";
-import { http } from "@tauri-apps/api";
+import { fs, http, path } from "@tauri-apps/api";
+import { ResponseType } from "@tauri-apps/api/http.js";
 
-export async function downloadModFromSlug(slug, gameVersion, filePath) {
-    let modData = util.getData("https://api.modrinth.com/api/v2/project/" + slug + "/version");
+export async function downloadModFromSlug(slug, gameVersion, path) {
+    const modData = util.getData("https://api.modrinth.com/api/v2/project/" + slug + "/version");
 
     for (v in modData) {
-        let mc_versions = v.game_versions;
-        for (version in mc_versions) {
+        const gameVersions = v.game_versions;
+        for (version in gameVersions) {
             if (util.gameVersionEquals(version, gameVersion)) {
-                console.log("Found compatible mod version!")
-                return downloadMod(v, filePath);
+                return await downloadMod(v, path);
             }
         }
     }
 
-    console.error("Compatible version could not be found!");
+    throw new Error(```Could not find compatible mod version (slug: ${slug}, gameVersion: ${gameVersion}, path: ${path})```);
 }
 
 export async function downloadModFromVersionId(versionId, filePath) {
@@ -24,24 +23,18 @@ export async function downloadModFromVersionId(versionId, filePath) {
 }
 
 
-async function downloadMod(modrinthVersion, filePath) {
-    let url;
-    for (file in modrinthVersion.files) {
-        if (file.primary == true) {
-            url = file.url;
-        }
+async function downloadMod(modrinthVersion, path) {
+    const url = modrinthVersion.files.find((file) => file.primary)?.url;
+
+    if (!url) {
+        throw new Error(```No URL found (modrinthVersion: ${modrinthVersion}, path: ${path})```);
     }
-    if (url == undefined) {
-        console.error("Somehow a version without an attached file existed?\n Mod authors should not do this!");
+
+    const file = path.join(path, modrinthVersion.file_name);
+    
+    if (fsExtra.exists(file)) {
         return;
     }
 
-    let file = path.join(filePath, modrinthVersion.file_name);
-    if (!fsExtra.exists(file)) {
-        let data = await http.fetch(url);
-        fs.writeFile(file, data);
-        console.log("Downloaded Mod " + modrinthVersion + " to file " + file);
-    } else {
-        console.log("Mod already exists on disk. Nothing has been downloaded.");
-    }
+    fs.writeFile(file, await util.getData(url, { responseType: 3 }));
 }

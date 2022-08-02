@@ -1,10 +1,10 @@
 import { fs, path } from "@tauri-apps/api";
 import * as fsExtra from "tauri-plugin-fs-extra-api";
 
-const configPath = "./AxolotlClient.json"; // What should the default config path be?
+const configPath = await path.join(await path.appDir(), "AxolotlClient.json");
 
 // Expand if needed, remove unused fields if the specific part is finished (e.g. auth)
-config = {
+let config = {
     auth: {
         /*uuid1: { //Only an example. Must be populated in code.
             username: null,
@@ -34,27 +34,26 @@ config = {
         },
 
         launcher: {
-            minimizeOnGameStart: true,
-            configPath: configPath,
+            minimizeOnGameStart: true
         }
     },
 
     currentMCVersion: null,
 
     versionConfigs: {}
-}
+};
 
 export async function save() {
-    if (!fsExtra.exists(config.settings.launcher.configPath)) {
-        fs.createDir(config.settings.launcher.configPath);
+    if(!await fsExtra.exists(await path.appDir())) {
+        await fs.createDir(await path.appDir());
     }
 
-    fs.writeTextFile(config.settings.launcher.configPath, JSON.stringify(config));
+    await fs.writeTextFile(configPath, JSON.stringify(config));
 }
 
 export async function load() {
-    if (fsExtra.exists(config.settings.launcher.configPath)) {
-        config = JSON.parse(fs.readTextFile(config.settings.launcher.configPath));
+    if (await fsExtra.exists(configPath)) {
+        config = { ...config, ...JSON.parse(await fs.readTextFile(configPath)) };
     }
 }
 
