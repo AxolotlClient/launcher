@@ -1,5 +1,5 @@
 import Launcher from "./launcher/launcher.mjs";
-import * as config from "./config/config.mjs"; // This is somehow broken, I have no idea how to fix it.
+import * as config from "./config/config.mjs";
 
 await config.load();
 await config.save();

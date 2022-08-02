@@ -2,6 +2,8 @@ import { fs, path } from "@tauri-apps/api";
 import * as fsExtra from "tauri-plugin-fs-extra-api";
 import * as paths from "../util/paths.mjs";
 import { Manifest, Version } from "./mojang_meta.mjs";
+import * as config from "../config/config.mjs";
+import * as util from "../util/util.mjs";
 
 export default class Launcher {
 
@@ -38,8 +40,10 @@ export default class Launcher {
         await version.getClient().download(versionJar);
 
         const classpath = [];
-        
-        return [ "java", "-cp", classpath.join(path.delimiter), version.getMainClass(), "--accessToken", "0", "--username", "Test", "--assetsDir", paths.ASSETS, "--assetIndex", version.getAssetIndex().getId() ];
+
+        let jre = util.gameVersionAtLeast(options.version, "1.16") ? config.getJRE17() : config.getJRE8();
+
+        return [jre, "-cp", classpath.join(path.delimiter), version.getMainClass(), "--accessToken", "0", "--username", "Test", "--assetsDir", paths.ASSETS, "--assetIndex", version.getAssetIndex().getId()];
     }
 
     async launch(options) {

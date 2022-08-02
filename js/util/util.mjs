@@ -11,9 +11,26 @@ export async function getData(url, options) {
 }
 
 export function gameVersionEquals(version, version2) {
-    if (version.split(".", 1)[0] === version2.split(".", 1)[0] &&
-        version.split(".", 1)[1] === version2.split(".", 1)[1]) {
+    if (version.length === version2.length) {
+        let versionArr = version.split(".");
+        let version2Arr = version2.split(".");
+        for (i = 0; i < versionArr.length; i++) {
+            if (versionArr[i] != version2Arr[i]) {
+                return false;
+            }
+        }
         return true;
+    }
+    return false;
+}
+
+export function gameVersionAtLeast(version, version2) {
+    let versionArr = version.split(".");
+    let version2Arr = version2.split(".");
+    for (i = 0; i < versionArr.length; i++) {
+        if (versionArr[i] < version2Arr[i]) {
+            return true;
+        }
     }
     return false;
 }
@@ -21,8 +38,8 @@ export function gameVersionEquals(version, version2) {
 // from MDN
 export function hex(buffer) {
     return Array.from(new Uint8Array(buffer))
-            .map((byte) => byte.toString(16).padStart(2, "0"))
-            .join("");
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
 }
 
 export async function downloadFile(url, file) {
