@@ -27,19 +27,12 @@ export function gameVersionEquals(version, version2) {
 export function gameVersionAtLeast(version, version2) {
     let versionArr = version.split(".");
     let version2Arr = version2.split(".");
-    for (i = 0; i < versionArr.length; i++) {
+    for (let i = 0; i < versionArr.length; i++) {
         if (versionArr[i] < version2Arr[i]) {
             return true;
         }
     }
     return false;
-}
-
-// from MDN
-export function hex(buffer) {
-    return Array.from(new Uint8Array(buffer))
-        .map((byte) => byte.toString(16).padStart(2, "0"))
-        .join("");
 }
 
 export async function downloadFile(url, file) {
@@ -48,4 +41,8 @@ export async function downloadFile(url, file) {
 
 export async function computeSha1(file) {
     return tauri.invoke("compute_sha1", { file: file });
+}
+
+export async function spawn(cmd, args) {
+    return tauri.invoke("spawn_program", { program: cmd, args: args });
 }

@@ -8,7 +8,7 @@
         "withGlobalTauri": true
     },
     "package": {
-        "productName": "axolotl-client-launcher",
+        "productName": "AxolotlClient Launcher",
         "version": "0.1.0"
     },
     "tauri": {
@@ -17,16 +17,7 @@
                 "scope": [ "https://*.mojang.com/*" ]
             },
             "fs": {
-                "all": false,
-                "copyFile": false,
-                "createDir": false,
-                "readDir": false,
-                "readFile": false,
-                "removeDir": false,
-                "removeFile": false,
-                "renameFile": false,
-                "scope": [ "**" ],
-                "writeFile": false
+                "scope": [ "**" ]
             },
             "all": true
         },
@@ -45,7 +36,7 @@
                 "icons/icon.icns",
                 "icons/icon.ico"
             ],
-            "identifier": "com.tauri.dev",
+            "identifier": "io.github.axolotlclient.launcher",
             "longDescription": "",
             "macOS": {
                 "entitlements": null,

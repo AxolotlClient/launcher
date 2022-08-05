@@ -5,7 +5,7 @@
 
 use data_encoding::HEXLOWER;
 use ring::digest::{Context, SHA1_FOR_LEGACY_USE_ONLY};
-use std::{io::{BufReader, Read, Write}, fs::File};
+use std::{io::{BufReader, Read, Write}, fs::File, process::Command};
 use tauri_plugin_fs_extra::FsExtra;
 
 macro_rules! str_err {
@@ -14,7 +14,7 @@ macro_rules! str_err {
     };
 }
 
-// adapted from "Rust Cookbook" - I don't know rust
+// next two functions: adapted from "Rust Cookbook" - I don't know rust
 
 #[tauri::command]
 async fn download_file(url: String, file: String) -> Result<(), String> {
@@ -44,10 +44,19 @@ async fn compute_sha1(file: String) -> Result<String, String> {
     Ok(HEXLOWER.encode(context.finish().as_ref()))
 }
 
+// TODO return process
+#[tauri::command]
+fn spawn_program(program: String, args: Vec<String>) -> Result<(), String> {
+    str_err!(Command::new(program)
+        .args(args)
+        .spawn())?;
+    Ok(())
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(FsExtra::default())
-        .invoke_handler(tauri::generate_handler![download_file, compute_sha1])
+        .invoke_handler(tauri::generate_handler![download_file, compute_sha1, spawn_program])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

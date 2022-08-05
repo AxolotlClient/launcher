@@ -1,5 +1,5 @@
 body {
-    font-family: 'Fira Sans', sans-serif;
+    font-family: "Fira Sans", sans-serif;
     text-align: center;
     background: url("assets/bg.jpg") center no-repeat;
     background-size: cover;
@@ -41,7 +41,7 @@ button:hover {
 .main .play {
     position: relative;
     top: 80vh;
-    transition: ease-in-out .4s;
+    transition: background ease-in-out .4s;
 }
 
 .main .open_settings {

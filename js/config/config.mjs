@@ -16,8 +16,8 @@ let config = {
 
     settings: {
         java: {
-            jre8: "", // Need to look up MC's runtime path, or search for a system install!
-            jre17: "",
+            jre8: null, // If null, look up MC's runtime path, or search for a system install!
+            jre17: null,
             minMem: "2G",
             maxMem: "2G",
             arguments: [

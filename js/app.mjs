@@ -23,11 +23,11 @@ const settings = document.querySelector(".settings");
 settingsButton.onclick = () => {
     main.style.display = "none";
     settings.style.display = "block";
-}
+};
 
 const exitButton = document.querySelector(".close_settings");
 
 exitButton.onclick = () => {
     main.style.display = "block";
     settings.style.display = "none";
-}
+};
