@@ -30,7 +30,8 @@ let config = {
             fullscreen: false,
             height: 480,
             width: 640,
-            detached: true
+            detached: true,
+            dir: null
         },
 
         launcher: {
@@ -63,6 +64,10 @@ export function getJRE8() {
 
 export function getJRE17() {
     return config.settings.java.jre17;
+}
+
+export function getGameDir() {
+  return config.settings.game.dir;
 }
 
 /*

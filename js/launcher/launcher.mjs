@@ -2,7 +2,7 @@ import { fs, path, shell } from "@tauri-apps/api";
 import * as fsExtra from "tauri-plugin-fs-extra-api";
 import * as paths from "../util/paths.mjs";
 import * as config from "../config/config.mjs";
-import { Manifest, Version } from "./mojang_meta.mjs";
+import { Library, Manifest, Version } from "./mojang_meta.mjs";
 import * as util from "../util/util.mjs";
 
 export default class Launcher {
@@ -52,18 +52,17 @@ export default class Launcher {
                 continue;
             }
 
-            const artifact = library.getDownloads().artifact;
+            const artifact = library.getArtifact();
 
-            const libraryPath = await path.join(paths.LIBRARIES, artifact.getPath());
-            const libraryFolder = await path.dirname(libraryPath);
-
-            if (!await fsExtra.exists(libraryFolder)) {
-                await fs.createDir(libraryFolder, { recursive: true });
+            if (artifact) {
+                classpath.push(await artifact.downloadDefault());
             }
 
-            await artifact.download(libraryPath);
+            const classifier = library.getClassifier();
 
-            classpath.push(libraryPath);
+            if (classifier) {
+                await artifact.downloadDefault();
+            }
         };
 
         const jre = util.gameVersionAtLeast(options.version, "1.17") ? config.getJRE17() : config.getJRE8();
@@ -76,7 +75,8 @@ export default class Launcher {
             "--username", "Test",
             "--assetsDir", paths.ASSETS,
             "--assetIndex", version.getAssetIndex().getId(),
-            "--version", "AxolotlClient-" + options.version
+            "--version", "AxolotlClient-" + options.version,
+            "--gameDir", config.getGameDir() ?? paths.DOT_MINECRAFT
         ];
     }
 

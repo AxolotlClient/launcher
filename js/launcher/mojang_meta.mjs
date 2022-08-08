@@ -1,6 +1,7 @@
-import { fs, os } from "@tauri-apps/api";
+import { fs, os, path } from "@tauri-apps/api";
 import * as fsExtra from "tauri-plugin-fs-extra-api";
 import * as util from "../util/util.mjs";
+import * as paths from "../util/paths.mjs";
 const DEFAULT_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
 
 async function getOsName() {
@@ -164,15 +165,24 @@ export class Library {
         return this.data.name;
     }
 
-    getDownloads() {
-        const res = {};
+    getArtifact() {
+        return new LibraryDownload(this.downloads.artifact);
+    }
 
-        for(const key in this.data.downloads) {
-            const value = this.data.downloads[key];
-            res[key] = new Download(value);
+    getClassifier() {
+        const classifiers = this.downloads.classifiers;
+
+        if (!classifiers) {
+            return null;
         }
 
-        return res;
+        const classifier = classifiers[getOsName()];
+
+        if (!classifier) {
+            return null;
+        }
+
+        return new LibraryDownload(classifier);
     }
 
     // from fabric-loom
@@ -224,6 +234,27 @@ export class Download {
         }
 
         await util.downloadFile(this.getUrl(), path);
+    }
+    
+}
+
+export class LibraryDownload extends Download {
+
+    constructor(data) {
+        super(data);
+    }
+
+    async download() {
+        const libPath = await path.join(paths.LIBRARIES, this.getPath());
+        const libParent = await path.dirname(libPath);
+
+        if (!await fsExtra.exists(libParent)) {
+            await fs.createDir(libParent, { recursive: true });
+        }
+
+        await this.download(libPath);
+
+        return libPath;
     }
     
 }
