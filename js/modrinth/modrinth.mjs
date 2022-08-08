@@ -5,9 +5,9 @@ import { fs } from "@tauri-apps/api";
 export async function downloadModFromSlug(slug, gameVersion, path) {
     const modData = util.getData("https://api.modrinth.com/api/v2/project/" + slug + "/version");
 
-    for (v in modData) {
+    for (const v of modData) {
         const gameVersions = v.game_versions;
-        for (version in gameVersions) {
+        for (const version of gameVersions) {
             if (util.gameVersionEquals(version, gameVersion)) {
                 return await downloadMod(v, path);
             }

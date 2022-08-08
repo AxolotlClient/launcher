@@ -20,7 +20,7 @@ export default class Launcher {
 
         const versionFolder = await path.join(paths.DOT_MINECRAFT, "versions", options.version);
 
-        if (!fsExtra.exists(versionFolder)) {
+        if (!await fsExtra.exists(versionFolder)) {
             await fs.createDir(versionFolder, { recursive: true });
         }
 
@@ -38,14 +38,35 @@ export default class Launcher {
             version = new Version(JSON.parse(await fs.readTextFile(versionJson)));
         }
 
-        callback("Downloading client...");
-
         const classpath = [ ];
+
+        callback("Downloading client...");
 
         await version.getClient().download(versionJar);
         classpath.push(versionJar);
 
-        const jre = util.gameVersionAtLeast(options.version, "1.16") ? config.getJRE17() : config.getJRE8();
+        callback("Downloading libraries...");
+
+        for (const library of version.getLibraries()) {
+            if (!await library.isApplicable()) {
+                continue;
+            }
+
+            const artifact = library.getDownloads().artifact;
+
+            const libraryPath = await path.join(paths.LIBRARIES, artifact.getPath());
+            const libraryFolder = await path.dirname(libraryPath);
+
+            if (!await fsExtra.exists(libraryFolder)) {
+                await fs.createDir(libraryFolder, { recursive: true });
+            }
+
+            await artifact.download(libraryPath);
+
+            classpath.push(libraryPath);
+        };
+
+        const jre = util.gameVersionAtLeast(options.version, "1.17") ? config.getJRE17() : config.getJRE8();
 
         return [
             jre,
@@ -54,14 +75,17 @@ export default class Launcher {
             "--accessToken", "0",
             "--username", "Test",
             "--assetsDir", paths.ASSETS,
-            "--assetIndex", version.getAssetIndex().getId()
+            "--assetIndex", version.getAssetIndex().getId(),
+            "--version", "AxolotlClient-" + options.version
         ];
     }
 
     /**
      * Launches the game.
      * @param options The launch options.
-     * @param callback function(stage, min, max): accepts progress. If min and max are ommited, the progress is indeterminate.
+     * @param callback function(stage, min, max): accepts progress.
+     * If min and max are ommited, the progress is indeterminate.
+     * If no arguments are provided, the launch is complete.
      */
     async launch(options, callback) {
         callback ??= (stage, min, max) => {
@@ -72,6 +96,7 @@ export default class Launcher {
 
             console.log(`Progress (${stage}, ${min && max ? `${min}, ${max}` : "indeterminate"})`);
         };
+
         const args = await this.setup(options, callback);
         callback("Spawning...");
         await util.spawn(args[0], args.slice(1));

@@ -9,7 +9,7 @@ const launcher = new Launcher();
 
 playButton.onclick = async() => {
     try {
-        await launcher.launch({ version: "1.8.9" });
+        await launcher.launch({ version: "1.19.2" });
     } catch (error) {
         // TODO better error handling
         console.error(error);

@@ -25,14 +25,18 @@ export function gameVersionEquals(version, version2) {
 }
 
 export function gameVersionAtLeast(version, version2) {
-    let versionArr = version.split(".");
-    let version2Arr = version2.split(".");
+    let versionArr = version.split(".").map(Number);
+    let version2Arr = version2.split(".").map(Number);
+    versionArr[2] ??= 0;
+    version2Arr[2] ??= 0;
+
+    let result = true;
+
     for (let i = 0; i < versionArr.length; i++) {
-        if (versionArr[i] < version2Arr[i]) {
-            return true;
-        }
+        result &&= versionArr[i] >= version2Arr[i];
     }
-    return false;
+    
+    return result;
 }
 
 export async function downloadFile(url, file) {

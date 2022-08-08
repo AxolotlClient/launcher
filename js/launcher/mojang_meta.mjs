@@ -1,7 +1,18 @@
-import { fs } from "@tauri-apps/api";
+import { fs, os } from "@tauri-apps/api";
 import * as fsExtra from "tauri-plugin-fs-extra-api";
 import * as util from "../util/util.mjs";
 const DEFAULT_URL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+
+async function getOsName() {
+    switch (await os.type()) {
+        case "Linux":
+            return "linux";
+        case "Darwin":
+            return "osx";
+        case "Windows_NT":
+            return "windows";
+    }
+}
 
 export class Handle {
 
@@ -102,6 +113,10 @@ export class Version {
         return new Download(this.data.downloads.client);
     }
 
+    getLibraries() {
+        return this.data.libraries.map((data) => new Library(data));
+    }
+
 }
 
 export class AssetIndexHandle extends Handle {
@@ -137,6 +152,52 @@ export class AssetIndex {
 
 }
 
+export class Library {
+
+    data;
+
+    constructor(data) {
+        this.data = data;
+    }
+
+    getName() {
+        return this.data.name;
+    }
+
+    getDownloads() {
+        const res = {};
+
+        for(const key in this.data.downloads) {
+            const value = this.data.downloads[key];
+            res[key] = new Download(value);
+        }
+
+        return res;
+    }
+
+    // from fabric-loom
+    async isApplicable() {
+        if (!this.data.rules) {
+            return true;
+        }
+        
+        let result = false;
+
+        for (const rule of this.data.rules) {
+            if (rule.os) {
+                if (rule.os.name === await getOsName()) {
+                    return rule.action === "allow";
+                }
+            } else {
+                result = rule.action === "allow";
+            }
+        }
+
+        return result;
+    }
+
+}
+
 export class Download {
 
     data;
@@ -151,6 +212,10 @@ export class Download {
 
     getUrl() {
         return this.data.url;
+    }
+
+    getPath() {
+        return this.data.path;
     }
 
     async download(path) {
