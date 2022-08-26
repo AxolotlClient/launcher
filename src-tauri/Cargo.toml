@@ -23,6 +23,7 @@ reqwest = "0.11.11"
 ring = "0.16.20"
 error-chain = "0.12.4"
 data-encoding = "2.3.2"
+zip-extract = "0.1.1"
 
 [features]
 # by default Tauri runs in production mode

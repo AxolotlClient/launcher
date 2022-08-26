@@ -50,3 +50,7 @@ export async function computeSha1(file) {
 export async function spawn(cmd, args) {
     return tauri.invoke("spawn_program", { program: cmd, args: args });
 }
+
+export async function extractArchive(archive, target){
+    return tauri.invoke("extract_file", { archive: archive, target_dir: target });
+}
