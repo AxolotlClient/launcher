@@ -44,11 +44,12 @@ async fn compute_sha1(file: String) -> Result<String, String> {
     Ok(HEXLOWER.encode(context.finish().as_ref()))
 }
 
-// TODO return error
 #[tauri::command]
 async fn extract_file(archive: String, target_dir: String) -> Result<(), String> {
-    let result = zip_extract::extract(Cursor::new(archive), &PathBuf::from(target_dir), false);
-    Ok(())
+    match zip_extract::extract(Cursor::new(&archive), &PathBuf::from(&target_dir), false) {
+        Ok(()) => return Ok(()),
+        Err(error) => return Err("Could not extract Zip file: ".to_owned()+&archive+ " to directory "+ &target_dir + " with Error "+&error.to_string()),
+    };
 }
 
 // TODO return process
