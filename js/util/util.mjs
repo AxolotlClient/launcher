@@ -1,4 +1,5 @@
 import { http, tauri } from "@tauri-apps/api";
+import { Command } from "@tauri-apps/api/shell";
 
 export async function getData(url, options) {
     const result = await http.fetch(url, options);
@@ -47,10 +48,19 @@ export async function computeSha1(file) {
     return tauri.invoke("compute_sha1", { file: file });
 }
 
-export async function spawn(cmd, args) {
-    return tauri.invoke("spawn_program", { program: cmd, args: args });
+// If something here needs to be changed feel free to
+export async function spawn(cmd, args, options = "") {
+    const command = new Command(cmd, args, options);
+    command.on('close', data => {
+        console.log(cmd + ` finished with code ${data.code} and signal ${data.signal}`);
+    });
+    command.on('error', error => console.error(`"${cmd}" error: "${error}"`));
+    command.stdout.on('data', line => console.log(`"${cmd}": "${line}"`));
+    command.stderr.on('data', line => console.log(`"${cmd}" stderr: "${line}"`));
+
+    return await command.spawn();
 }
 
-export async function extractArchive(archive, target){
+export async function extractArchive(archive, target) {
     return tauri.invoke("extract_file", { archive: archive, target_dir: target });
 }

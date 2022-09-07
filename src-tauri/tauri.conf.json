@@ -19,6 +19,11 @@
             "fs": {
                 "scope": [ "**" ]
             },
+            "shell": {
+                "all":true,
+                "execute": true,
+                "open": true
+            },
             "all": true
         },
         "bundle": {
