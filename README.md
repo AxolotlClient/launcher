@@ -8,11 +8,13 @@ Ubuntu:
 ```
 $ sudo apt update
 $ curl -sL https://deb.nodesource.com/setup_16.x | sudo bash -
-$ sudo apt install gcc g++ make nodejs file cargo npm libdbus-1-dev pkg-config libgtk-4-dev libgtk-3-dev libsoup2.4-dev libjavascriptcoregtk-4.0-dev libwebkit2gtk-4.0-dev
+$ sudo apt install gcc g++ make nodejs file cargo npm libdbus-1-dev pkg-config libgtk-4-dev libgtk-3-dev libsoup2.4-dev libjavascriptcoregtk-4.0-dev libwebkit2gtk-4.0-dev librsvg2-dev
 ```
 
-
-Arch: `todo`
+Arch: 
+```
+$ sudo pacman -S gcc make npm cargo file libsoup pkgconf gtk4 gtk3 webkit2gtk-4.1 librsvg	
+```
 
 Fedora: 
 ```
