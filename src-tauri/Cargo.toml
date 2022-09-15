@@ -26,7 +26,11 @@ data-encoding = "2.3.2"
 zip-extract = "0.1.1"
 config = "0.13.2"
 toml = "0.5.9"
-
+ferinth = "2"
+directories = "4"
+sha-1 = "0.10.0"
+anyhow = "1"
+bytes = "1"
 [features]
 # by default Tauri runs in production mode
 # when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL

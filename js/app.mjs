@@ -1,19 +1,10 @@
-import Launcher from "./launcher/launcher.mjs";
-import * as config from "./config/config.mjs";
-
-await config.load();
-await config.save();
+import { invoke } from "@tauri-apps/api";
 
 const playButton = document.querySelector(".play");
 const launcher = new Launcher();
 
 playButton.onclick = async() => {
-    try {
-        await launcher.launch({ version: "1.8.9" });
-    } catch (error) {
-        // TODO better error handling
-        console.error(error);
-    }
+    invoke('launch').then((response) => console.log(response))
 };
 
 const settingsButton = document.querySelector(".open_settings");

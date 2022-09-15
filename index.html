@@ -8,7 +8,7 @@
 
 <body>
     <div class="main">
-        <button class="play">
+        <button onClick="import invoke from '@tauri-apps/api';tauri.invoke('launch')" class="play">
             Play
         </button>
         <a class="open_settings">
