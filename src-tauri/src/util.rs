@@ -1,3 +1,4 @@
+use std::fs;
 use std::fs::File;
 use std::io::BufReader;
 use std::io::Cursor;
@@ -6,6 +7,7 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use anyhow::{anyhow, Context, Result};
+use tauri::api::path::data_dir;
 
 macro_rules! str_err {
     ($res:expr) => {
@@ -67,4 +69,45 @@ pub(crate) async fn extract_tar_gz(archive: &PathBuf, target_dir: &PathBuf) -> R
 
 pub(crate) fn is_dir_empty(dir: &PathBuf) -> Result<bool> {
     Ok(dir.read_dir()?.next().is_none())
+}
+
+pub(crate) struct DataDir {
+    path: PathBuf,
+}
+
+impl DataDir {
+    pub(crate) fn new() -> Self {
+        let mut dir = data_dir().unwrap();
+        dir.push("AxolotlClient/");
+        fs::create_dir_all(&dir).unwrap();
+
+        Self { path: dir }
+    }
+    pub(crate) fn get_java_dir(&self, version: &str) -> &PathBuf {
+        let mut dir = self.path.clone();
+        dir.push(format!("java/{version}/"));
+        fs::create_dir_all(&dir).unwrap();
+        &dir
+    }
+
+    pub(crate) fn get_instance_dir(&self, slug: &str, version: &str) -> &PathBuf {
+        let mut dir = self.path.clone();
+        dir.push(format!("instances/{slug}/{version}/"));
+        fs::create_dir_all(&dir).unwrap();
+        &dir
+    }
+
+    pub(crate) fn get_instance_mrpack_dir(&self, slug: &str, version: &str) -> &PathBuf {
+        let mut dir = self.path.clone();
+        dir.push(format!("instances/{slug}/{version}/mrpack/"));
+        fs::create_dir_all(&dir).unwrap();
+        &dir
+    }
+
+    pub(crate) fn get_instance_minecraft_dir(&self, slug: &str, version: &str) -> &PathBuf {
+        let mut dir = self.path.clone();
+        dir.push(format!("instances/{slug}/{version}/.minecraft/"));
+        fs::create_dir_all(&dir).unwrap();
+        &dir
+    }
 }

@@ -2,16 +2,24 @@ use std::{fs, path::PathBuf};
 
 use anyhow::Result;
 
-use crate::util::{download_file, extract_file, is_dir_empty};
+use crate::util::{download_file, extract_file, is_dir_empty, DataDir};
 
-pub(crate) async fn get_modpack(slug: &str, mc_version: &str, instance: PathBuf) -> Result<()> {
-    let mut mrpack_directory = instance;
-    mrpack_directory.push("mrpack/");
+pub(crate) async fn install_modpack(
+    slug: &str,
+    mc_version: &str,
+    data_dir: &DataDir,
+) -> Result<()> {
+    todo!("Install modpack");
+}
 
-    fs::create_dir_all(&mrpack_directory)?;
-
-    if is_dir_empty(&mrpack_directory)? {
-        download_mrpack(slug, mc_version, mrpack_directory).await?;
+pub(crate) async fn get_modpack(slug: &str, mc_version: &str, data_dir: &DataDir) -> Result<()> {
+    if is_dir_empty(&data_dir.get_instance_mrpack_dir(slug, mc_version))? {
+        download_mrpack(
+            slug,
+            mc_version,
+            data_dir.get_instance_mrpack_dir(slug, mc_version),
+        )
+        .await?;
     }
 
     // Install modpack to .minecraft
@@ -19,7 +27,7 @@ pub(crate) async fn get_modpack(slug: &str, mc_version: &str, instance: PathBuf)
     Ok(())
 }
 
-async fn download_mrpack(slug: &str, mc_version: &str, instance: PathBuf) -> Result<()> {
+async fn download_mrpack(slug: &str, mc_version: &str, instance: &PathBuf) -> Result<()> {
     // Get versions
     let modrinth = ferinth::Ferinth::default();
     let versions = modrinth

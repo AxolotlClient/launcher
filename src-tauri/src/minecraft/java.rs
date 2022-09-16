@@ -4,7 +4,7 @@ use anyhow::Result;
 use anyhow::{anyhow, bail};
 use tauri::api::path::data_dir;
 
-use crate::util::{download_file, extract_file, extract_tar_gz, is_dir_empty};
+use crate::util::{download_file, extract_file, extract_tar_gz, is_dir_empty, DataDir};
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Version {
@@ -33,13 +33,10 @@ fn find_java(version: Version) -> Option<PathBuf> {
     todo!();
 }
 
-pub(crate) async fn get_java(version: Version) -> Result<PathBuf> {
-    let mut java_dir: PathBuf = data_dir().unwrap();
-    java_dir.push(format!("AxolotlClient/java/{}/", version.version()));
+pub(crate) async fn get_java(version: Version, data_dir: &DataDir) -> Result<PathBuf> {
+    let java_dir = data_dir.get_java_dir(version.version());
 
-    fs::create_dir_all(&java_dir)?;
-
-    if is_dir_empty(&java_dir)? {
+    if is_dir_empty(java_dir)? {
         download_java(version, &java_dir).await?;
     }
 
