@@ -5,7 +5,7 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.0.2",
+    "@tauri-apps/api": "^1.1.0",
     "tauri-plugin-fs-extra-api": "github:tauri-apps/tauri-plugin-fs-extra#0bafb6d5"
   },
   "devDependencies": {

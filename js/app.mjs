@@ -1,10 +1,10 @@
 import { invoke } from "@tauri-apps/api";
 
+
 const playButton = document.querySelector(".play");
-const launcher = new Launcher();
 
 playButton.onclick = async() => {
-    invoke('launch').then((response) => console.log(response))
+    invoke('launch')
 };
 
 const settingsButton = document.querySelector(".open_settings");

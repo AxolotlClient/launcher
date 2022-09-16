@@ -1,42 +1,105 @@
-use std::path::Path;
+use std::{fs, path::PathBuf};
 
-#[derive(Clone, Copy)]
-enum Version {
+use anyhow::Result;
+use anyhow::{anyhow, bail};
+use tauri::api::path::data_dir;
+
+use crate::util::{download_file, extract_file, extract_tar_gz, is_dir_empty};
+
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum Version {
     Java11,
     Java16,
     Java17,
     Java8,
 }
 
-struct JavaInstallation {
-    path: Box<Path>,
-    version: Version,
-}
-
-fn get_installation(version: Version) {
-    if let Some(path) = find_java(version) {
-        todo!()
-    } else {
-        get_java(version).unwrap();
+impl Version {
+    pub(crate) fn from_mc_version(mc_version: &str) -> Version {
+        // todo: check if version needs java 8, semver crate?
+        return Version::Java17;
+    }
+    fn version(&self) -> &str {
+        match &self {
+            Version::Java11 => "11",
+            Version::Java16 => "16",
+            Version::Java17 => "17",
+            Version::Java8 => "8",
+        }
     }
 }
 
-#[cfg(any(target_os = "windows"))]
-fn find_java(version: Version) -> Option<Box<Path>> {
+fn find_java(version: Version) -> Option<PathBuf> {
     todo!();
 }
 
-#[cfg(any(target_os = "macos"))]
-fn find_java(version: Version) -> Option<Box<Path>> {
-    todo!();
+pub(crate) async fn get_java(version: Version) -> Result<PathBuf> {
+    let mut java_dir: PathBuf = data_dir().unwrap();
+    java_dir.push(format!("AxolotlClient/java/{}/", version.version()));
+
+    fs::create_dir_all(&java_dir)?;
+
+    if is_dir_empty(&java_dir)? {
+        download_java(version, &java_dir).await?;
+    }
+
+    for entry in glob::glob(&(java_dir.display().to_string() + "**/bin/java"))? {
+        if let Ok(path) = entry {
+            return Ok(path);
+        };
+    }
+
+    bail!("Could not find a Java installation!")
 }
 
-#[cfg(any(target_os = "linux"))]
-fn find_java(version: Version) -> Option<Box<Path>> {
-    todo!();
-}
+async fn download_java(version: Version, java_dir: &PathBuf) -> Result<()> {
+    let mut url = String::new();
 
-fn get_java(version: Version) -> Result<Box<Path>, String> {
-    // fetch graalvm from github
-    todo!();
+    match std::env::consts::ARCH {
+        "x86_64" | "x86" | "aarch64" | "arm" => {}
+        _ => {
+            bail!("Unsupported architecture!")
+        }
+    }
+
+    // So close...
+    if std::env::consts::ARCH == "x86_64" {
+        url = format!(
+            "https://api.adoptium.net/v3/binary/latest/{}/ga/{}/{}/jre/hotspot/normal/eclipse",
+            version.version(),
+            std::env::consts::OS,
+            "x64"
+        );
+    } else {
+        url = format!(
+            "https://api.adoptium.net/v3/binary/latest/{}/ga/{}/{}/jre/hotspot/normal/eclipse",
+            version.version(),
+            std::env::consts::OS,
+            std::env::consts::ARCH
+        );
+    }
+
+    let mut file = java_dir.clone();
+
+    if cfg!(target_os = "windows") {
+        file.push("jre.zip");
+    } else {
+        file.push("jre.tar.gz");
+    }
+
+    println!("Downloading Java {}", version.version());
+
+    download_file(&url, None, &file).await?;
+
+    println!("Extracting Java {}", version.version());
+
+    if cfg!(target_os = "windows") {
+        extract_file(&file, &java_dir).await?;
+    } else {
+        extract_tar_gz(&file, &java_dir).await?;
+    }
+
+    fs::remove_file(file)?;
+
+    Ok(())
 }
