@@ -8,7 +8,6 @@ pub(crate) mod minecraft;
 pub(crate) mod util;
 
 use anyhow::Result;
-use std::{fs::File, io::Write};
 use tauri_plugin_fs_extra::FsExtra;
 
 macro_rules! str_err {
@@ -25,8 +24,6 @@ async fn launch() -> Result<(), String> {
     // Launch the game
     minecraft::launcher::launch(config).await.unwrap();
 
-    //
-    println!("hey");
     Ok(())
 }
 

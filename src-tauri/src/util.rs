@@ -1,12 +1,12 @@
 use std::fs;
 use std::fs::File;
 use std::io::BufReader;
-use std::io::Cursor;
-use std::io::Read;
 use std::io::Write;
 use std::path::PathBuf;
 
+use anyhow::bail;
 use anyhow::{anyhow, Context, Result};
+use reqwest::Client;
 use tauri::api::path::data_dir;
 
 macro_rules! str_err {
@@ -15,27 +15,43 @@ macro_rules! str_err {
     };
 }
 
-pub(crate) async fn download_file(url: &str, sha1: Option<String>, path: &PathBuf) -> Result<()> {
-    let response = str_err!(reqwest::get(url).await).map_err(|e| anyhow!(e))?;
-    let content = response.bytes().await?;
-
-    if sha1.is_some() {
-        if calculate_hash(&content, sha1.unwrap()) {
-            let mut dest = File::create(path)?;
-            // let content = str_err!(response.bytes().await).map_err(|e| anyhow!(e))?;
-            dest.write_all(&content)?;
-            return Ok(());
-        } else {
-            return Err(anyhow!("Downloaded file did not match hash."));
-        }
-    } else {
-        let mut dest = File::create(path)?;
-        dest.write_all(&content)?;
-        return Ok(());
-    }
+pub(crate) async fn request_file(url: &str) -> Result<String> {
+    Ok(reqwest::get(url).await?.text().await?)
 }
 
-fn calculate_hash(file: &bytes::Bytes, sha1: String) -> bool {
+pub(crate) async fn download_file(
+    url: &str,
+    sha1: Option<&str>,
+    path: &PathBuf,
+    client: Option<&Client>,
+) -> Result<()> {
+    let response = match client {
+        Some(client) => {
+            client
+                .get(url)
+                .header(
+                    "User-Agent",
+                    "AxolotlClient. Contact me@j0.lol for concerns.",
+                )
+                .send()
+                .await?
+        }
+        None => reqwest::get(url).await?,
+    };
+    let content = response.bytes().await?;
+    if sha1.is_some() {
+        if !verify_hash(&content, sha1.unwrap()) {
+            bail!("Downloaded file did not match hash.");
+        }
+    }
+
+    dbg!(content.len());
+    let mut dest = File::create(path)?;
+    dest.write_all(&content)?;
+    return Ok(());
+}
+
+fn verify_hash(file: &bytes::Bytes, sha1: &str) -> bool {
     // todo: actually calculate hash. crypto crates suck.
     // sha1 isnt collision resistant and sha512 may take too long.
     true
@@ -72,7 +88,7 @@ pub(crate) fn is_dir_empty(dir: &PathBuf) -> Result<bool> {
 }
 
 pub(crate) struct DataDir {
-    path: PathBuf,
+    pub(crate) path: PathBuf,
 }
 
 impl DataDir {
@@ -83,31 +99,67 @@ impl DataDir {
 
         Self { path: dir }
     }
-    pub(crate) fn get_java_dir(&self, version: &str) -> &PathBuf {
+    pub(crate) fn get_java_dir(&self, version: &str) -> PathBuf {
         let mut dir = self.path.clone();
         dir.push(format!("java/{version}/"));
         fs::create_dir_all(&dir).unwrap();
-        &dir
+        dir
     }
 
-    pub(crate) fn get_instance_dir(&self, slug: &str, version: &str) -> &PathBuf {
+    pub(crate) fn get_instance_dir(&self, slug: &str, version: &str) -> PathBuf {
         let mut dir = self.path.clone();
         dir.push(format!("instances/{slug}/{version}/"));
         fs::create_dir_all(&dir).unwrap();
-        &dir
+        dir
     }
 
-    pub(crate) fn get_instance_mrpack_dir(&self, slug: &str, version: &str) -> &PathBuf {
+    pub(crate) fn get_instance_mrpack_dir(&self, slug: &str, version: &str) -> PathBuf {
         let mut dir = self.path.clone();
         dir.push(format!("instances/{slug}/{version}/mrpack/"));
         fs::create_dir_all(&dir).unwrap();
-        &dir
+        dir
     }
 
-    pub(crate) fn get_instance_minecraft_dir(&self, slug: &str, version: &str) -> &PathBuf {
+    pub(crate) fn get_instance_minecraft_dir(&self, slug: &str, version: &str) -> PathBuf {
         let mut dir = self.path.clone();
         dir.push(format!("instances/{slug}/{version}/.minecraft/"));
         fs::create_dir_all(&dir).unwrap();
-        &dir
+        dir
+    }
+    pub(crate) fn get_mod_dir(&self, slug: &str, version: &str, path: &str) -> PathBuf {
+        let mut dir = self.path.clone();
+        dir.push(format!("instances/{slug}/{version}/.minecraft/{}", path));
+        fs::create_dir_all(&dir.parent().unwrap()).unwrap();
+        dir
+    }
+
+    pub(crate) fn get_library_dir(&self, path: &str) -> Result<PathBuf> {
+        let mut dir = self.path.clone();
+        dir.push(format!("libraries/{}", path));
+        fs::create_dir_all(&dir.parent().unwrap())?;
+        Ok(dir)
+    }
+    pub(crate) fn get_assets_dir(&self) -> PathBuf {
+        let mut dir = self.path.clone();
+        dir.push("assets/");
+        fs::create_dir_all(&dir.parent().unwrap()).unwrap();
+        dir
+    }
+
+    pub(crate) fn get_asset_dir(&self, hash: &str) -> Result<PathBuf> {
+        let mut dir = self.path.clone();
+        dir.push(format!(
+            "assets/objects/{}/{}",
+            hash.split_at(2 * hash.chars().nth(0).unwrap().len_utf8()).0,
+            hash
+        ));
+        fs::create_dir_all(&dir.parent().unwrap())?;
+        Ok(dir)
+    }
+    pub(crate) fn get_asset_index_dir(&self, version: &str) -> Result<PathBuf> {
+        let mut dir = self.path.clone();
+        dir.push(format!("assets/indexes/{version}.json"));
+        fs::create_dir_all(&dir.parent().unwrap())?;
+        Ok(dir)
     }
 }
