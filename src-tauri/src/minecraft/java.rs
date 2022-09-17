@@ -3,26 +3,30 @@ use std::{fs, path::PathBuf};
 use anyhow::bail;
 use anyhow::Result;
 use reqwest::Client;
+use semver::VersionReq;
 
 use crate::util::{download_file, extract_file, extract_tar_gz, is_dir_empty, DataDir};
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Version {
-    Java11,
-    Java16,
     Java17,
     Java8,
 }
 
 impl Version {
-    pub(crate) fn from_mc_version(mc_version: &str) -> Version {
-        // todo: check if version needs java 8, semver crate?
-        return Version::Java17;
+    pub(crate) fn from_mc_version(mc_version: &str) -> Result<Version> {
+        let mc_version = semver::Version::parse(&mc_version.replace("_", "+"))?;
+
+        let eight_req = VersionReq::parse("<1.17")?;
+
+        if !eight_req.matches(&mc_version) {
+            return Ok(Version::Java8);
+        } else {
+            return Ok(Version::Java17);
+        }
     }
     fn version(&self) -> &str {
         match &self {
-            Version::Java11 => "11",
-            Version::Java16 => "16",
             Version::Java17 => "17",
             Version::Java8 => "8",
         }
