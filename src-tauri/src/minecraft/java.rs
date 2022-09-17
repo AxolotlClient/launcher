@@ -1,7 +1,7 @@
 use std::{fs, path::PathBuf};
 
-use anyhow::Result;
 use anyhow::bail;
+use anyhow::Result;
 use reqwest::Client;
 
 use crate::util::{download_file, extract_file, extract_tar_gz, is_dir_empty, DataDir};
@@ -97,6 +97,7 @@ async fn download_java(version: Version, java_dir: &PathBuf, client: &Client) ->
     }
 
     fs::remove_file(file)?;
+    println!("Java installed.");
 
     Ok(())
 }

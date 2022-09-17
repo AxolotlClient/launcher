@@ -16,7 +16,7 @@ pub(crate) async fn get_minecraft(
     let resp: Value = serde_json::from_str(&resp)?;
 
     let mut class_path: ClassPath = String::new();
-    
+
     let mut url = "";
     for i in resp["versions"].as_array().unwrap() {
         if i["id"].as_str().unwrap() == version {
@@ -35,9 +35,10 @@ pub(crate) async fn get_minecraft(
     // fs::create_dir_all(&file_path)?;
     // file_path.push("client.jar");
 
+    println!("Downloading Minecraft Client");
+
     let file_path =
         data_dir.get_library_dir(&format!("com/mojang/minecraft/{}/client.jar", version))?;
-        class_path.push_str(&file_path.canonicalize()?.display().to_string());
     if !file_path.try_exists()? {
         download_file(
             url,
@@ -47,16 +48,15 @@ pub(crate) async fn get_minecraft(
         )
         .await?;
     }
+    class_path.push_str(&file_path.canonicalize()?.display().to_string());
+    println!("Downloading Minecraft libraries");
 
     // Get libraries
     for i in resp["libraries"].as_array().unwrap() {
         let url = i["downloads"]["artifact"]["url"].as_str().unwrap();
         let path =
             data_dir.get_library_dir(i["downloads"]["artifact"]["path"].as_str().unwrap())?;
-        
-        class_path.push_str(":");
-        class_path.push_str(&path.canonicalize()?.display().to_string());
-        
+
         if !path.try_exists()? {
             download_file(
                 url,
@@ -66,9 +66,12 @@ pub(crate) async fn get_minecraft(
             )
             .await?;
         }
+        class_path.push_str(":");
+        class_path.push_str(&path.canonicalize()?.display().to_string());
     }
 
     // Get assets
+    println!("Downloading Minecraft assets");
 
     let url = resp["assetIndex"]["url"].as_str().unwrap();
     let resp = request_file(url).await?;
@@ -76,7 +79,7 @@ pub(crate) async fn get_minecraft(
 
     let path = data_dir.get_asset_index_dir(version)?;
     if !path.try_exists()? {
-        download_file( url, None, &path, Some(&client), ).await?;
+        download_file(url, None, &path, Some(&client)).await?;
     }
     // todo try join simulatneously.
 

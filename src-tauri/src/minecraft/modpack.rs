@@ -17,6 +17,8 @@ pub(crate) async fn install_modpack(
     client: &Client,
     class_path: &ClassPath,
 ) -> Result<ModPath> {
+    let mut mod_path: ModPath = String::new();
+
     let modpack_dir = data_dir.get_instance_mrpack_dir(slug, mc_version);
     let minecraft_dir = data_dir.get_instance_minecraft_dir(slug, mc_version);
 
@@ -27,35 +29,46 @@ pub(crate) async fn install_modpack(
 
     // Download mods
     for file in index_json["files"].as_array().unwrap() {
-        println!("hi");
-        // todo: fix this downloading. it does not work.
+        let path = data_dir.get_mod_dir(slug, mc_version, file["path"].as_str().unwrap());
         download_file(
             &file["downloads"][0].as_str().unwrap(),
             Some(&file["hashes"]["sha1"].as_str().unwrap()),
-            &data_dir.get_mod_dir(slug, mc_version, file["path"].as_str().unwrap()),
+            &path,
             Some(client),
         )
         .await?;
+        if !mod_path.is_empty() {
+            mod_path.push_str(":");
+        }
+        mod_path.push_str(&path.canonicalize()?.display().to_string());
     }
 
+    let mut override_dir = modpack_dir;
+    override_dir.push("overrides/");
+
+    // Apply overrides
+    dircpy::copy_dir(&override_dir, &minecraft_dir)?;
+
     if !&index_json["dependencies"]["fabric-loader"].is_null() {
-        let mc_version =
-            semver::Version::parse(&index_json["dependencies"]["minecraft"].as_str().unwrap())?;
+        let version_string = &index_json["dependencies"]["minecraft"].as_str().unwrap();
+        let mc_version = semver::Version::parse(&version_string.replace("_", "+"))?;
 
         let fabric_req = VersionReq::parse(">=1.14")?;
         let legacy_fabric_req = VersionReq::parse("<=1.13.2, >=1.3")?;
-        let cts_req = VersionReq::parse("1.16_combat-6")?;
+        let cts_req = version_string == &"1.16_combat-6";
 
         // todo: support https://minecraft-cursed-legacy.github.io/
         let maven = match mc_version {
             x if fabric_req.matches(&x) => "https://maven.fabricmc.net/",
             x if legacy_fabric_req.matches(&x) => "https://maven.legacyfabric.net/",
-            x if cts_req.matches(&x) => "https://maven.combatreforged.com/",
+            x if cts_req => "https://maven.combatreforged.com/",
             _ => bail!("Unsupported!"),
         };
     }
 
-    todo!("Install modpack");
+    todo!("Install modloader");
+
+    Ok(mod_path)
 }
 
 pub(crate) async fn get_modpack(

@@ -9,7 +9,6 @@ use anyhow::{Context, Result};
 use reqwest::Client;
 use tauri::api::path::data_dir;
 
-
 pub(crate) async fn request_file(url: &str) -> Result<String> {
     Ok(reqwest::get(url).await?.text().await?)
 }
@@ -20,6 +19,7 @@ pub(crate) async fn download_file(
     path: &PathBuf,
     client: Option<&Client>,
 ) -> Result<()> {
+    dbg!(&path.file_name());
     let response = match client {
         Some(client) => {
             client
@@ -38,7 +38,6 @@ pub(crate) async fn download_file(
         bail!("Downloaded file did not match hash.");
     }
 
-    dbg!(content.len());
     let mut dest = File::create(path)?;
     dest.write_all(&content)?;
     return Ok(());

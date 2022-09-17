@@ -15,9 +15,9 @@ pub(crate) fn load() -> Config {
     // Check if the file exists. If not, create the file.
     // See `config` docs for implementation.
 
-    if !config.exists() {
-        todo!();
-    }
+    // if !config.exists() {
+    //     todo!();
+    // }
 
     // This will break if the directory is not UTF-8 encoded
     // for some reason. This shouldn't be a problem unless

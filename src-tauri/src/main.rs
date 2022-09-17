@@ -10,7 +10,6 @@ pub(crate) mod util;
 use anyhow::Result;
 use tauri_plugin_fs_extra::FsExtra;
 
-
 #[tauri::command]
 async fn launch() -> Result<(), String> {
     // Read config
@@ -41,8 +40,6 @@ async fn launch() -> Result<(), String> {
 //
 //     Ok(HEXLOWER.encode(context.finish().as_ref()))
 // }
-
-#[tauri::command]
 
 fn main() {
     tauri::Builder::default()
