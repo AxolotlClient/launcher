@@ -5,15 +5,10 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use anyhow::bail;
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result};
 use reqwest::Client;
 use tauri::api::path::data_dir;
 
-macro_rules! str_err {
-    ($res:expr) => {
-        $res.map_err(|err| err.to_string())
-    };
-}
 
 pub(crate) async fn request_file(url: &str) -> Result<String> {
     Ok(reqwest::get(url).await?.text().await?)
@@ -39,10 +34,8 @@ pub(crate) async fn download_file(
         None => reqwest::get(url).await?,
     };
     let content = response.bytes().await?;
-    if sha1.is_some() {
-        if !verify_hash(&content, sha1.unwrap()) {
-            bail!("Downloaded file did not match hash.");
-        }
+    if sha1.is_some() && !verify_hash(&content, sha1.unwrap()) {
+        bail!("Downloaded file did not match hash.");
     }
 
     dbg!(content.len());

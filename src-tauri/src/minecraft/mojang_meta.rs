@@ -4,15 +4,19 @@ use serde_json::Value;
 
 use crate::util::{download_file, request_file, DataDir};
 
+pub(crate) type ClassPath = String;
+
 pub(crate) async fn get_minecraft(
     version: &str,
     data_dir: &DataDir,
     client: &Client,
-) -> Result<()> {
+) -> Result<ClassPath> {
     let resp =
         request_file("https://launchermeta.mojang.com/mc/game/version_manifest.json").await?;
     let resp: Value = serde_json::from_str(&resp)?;
 
+    let mut class_path: ClassPath = String::new();
+    
     let mut url = "";
     for i in resp["versions"].as_array().unwrap() {
         if i["id"].as_str().unwrap() == version {
@@ -33,6 +37,7 @@ pub(crate) async fn get_minecraft(
 
     let file_path =
         data_dir.get_library_dir(&format!("com/mojang/minecraft/{}/client.jar", version))?;
+        class_path.push_str(&file_path.canonicalize()?.display().to_string());
     if !file_path.try_exists()? {
         download_file(
             url,
@@ -48,6 +53,10 @@ pub(crate) async fn get_minecraft(
         let url = i["downloads"]["artifact"]["url"].as_str().unwrap();
         let path =
             data_dir.get_library_dir(i["downloads"]["artifact"]["path"].as_str().unwrap())?;
+        
+        class_path.push_str(":");
+        class_path.push_str(&path.canonicalize()?.display().to_string());
+        
         if !path.try_exists()? {
             download_file(
                 url,
@@ -85,5 +94,6 @@ pub(crate) async fn get_minecraft(
             }
         }
     }
-    Ok(())
+    dbg!(&class_path);
+    Ok(class_path)
 }

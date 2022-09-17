@@ -1,9 +1,8 @@
 use std::{fs, path::PathBuf};
 
 use anyhow::Result;
-use anyhow::{anyhow, bail};
+use anyhow::bail;
 use reqwest::Client;
-use tauri::api::path::data_dir;
 
 use crate::util::{download_file, extract_file, extract_tar_gz, is_dir_empty, DataDir};
 
@@ -28,10 +27,6 @@ impl Version {
             Version::Java8 => "8",
         }
     }
-}
-
-fn find_java(version: Version) -> Option<PathBuf> {
-    todo!();
 }
 
 pub(crate) async fn get_java(

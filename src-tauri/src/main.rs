@@ -10,11 +10,6 @@ pub(crate) mod util;
 use anyhow::Result;
 use tauri_plugin_fs_extra::FsExtra;
 
-macro_rules! str_err {
-    ($res:expr) => {
-        $res.map_err(|err| err.to_string())
-    };
-}
 
 #[tauri::command]
 async fn launch() -> Result<(), String> {

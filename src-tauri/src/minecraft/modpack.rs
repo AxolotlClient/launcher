@@ -7,12 +7,16 @@ use serde_json::Value;
 
 use crate::util::{download_file, extract_file, is_dir_empty, DataDir};
 
+use super::mojang_meta::ClassPath;
+
+pub(crate) type ModPath = String;
 pub(crate) async fn install_modpack(
     slug: &str,
     mc_version: &str,
     data_dir: &DataDir,
     client: &Client,
-) -> Result<()> {
+    class_path: &ClassPath,
+) -> Result<ModPath> {
     let modpack_dir = data_dir.get_instance_mrpack_dir(slug, mc_version);
     let minecraft_dir = data_dir.get_instance_minecraft_dir(slug, mc_version);
 
@@ -23,6 +27,8 @@ pub(crate) async fn install_modpack(
 
     // Download mods
     for file in index_json["files"].as_array().unwrap() {
+        println!("hi");
+        // todo: fix this downloading. it does not work.
         download_file(
             &file["downloads"][0].as_str().unwrap(),
             Some(&file["hashes"]["sha1"].as_str().unwrap()),
