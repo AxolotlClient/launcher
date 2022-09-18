@@ -4,18 +4,19 @@ use serde_json::Value;
 
 use crate::util::{download_file, request_file, DataDir};
 
+use super::launcher::MinecraftLaunch;
+
 pub(crate) type ClassPath = String;
 
 pub(crate) async fn get_minecraft(
     version: &str,
     data_dir: &DataDir,
     client: &Client,
-) -> Result<ClassPath> {
+    mcl: &mut MinecraftLaunch,
+) -> Result<()> {
     let resp =
         request_file("https://launchermeta.mojang.com/mc/game/version_manifest.json").await?;
     let resp: Value = serde_json::from_str(&resp)?;
-
-    let mut class_path: ClassPath = String::new();
 
     let mut url = "";
     for i in resp["versions"].as_array().unwrap() {
@@ -30,7 +31,7 @@ pub(crate) async fn get_minecraft(
     let java_version = resp["javaVersion"]["majorVersion"].as_i64().unwrap();
     // todo: download java from HERE with the version they give you instead of trying to figure out out
     // like an idiot.
-    let main_class = resp["mainClass"].as_str().unwrap();
+    mcl.main_class = resp["mainClass"].as_str().unwrap().to_owned();
     // todo: this too. maybe make a Meta struct and return java version, main class and class path. make class path mutable
 
     let url = resp["downloads"]["client"]["url"].as_str().unwrap();
@@ -48,7 +49,7 @@ pub(crate) async fn get_minecraft(
         )
         .await?;
     }
-    class_path.push_str(&file_path.canonicalize()?.display().to_string());
+    mcl.add_class(&file_path);
     println!("Downloading Minecraft libraries");
 
     // Get libraries
@@ -66,8 +67,7 @@ pub(crate) async fn get_minecraft(
             )
             .await?;
         }
-        class_path.push_str(":");
-        class_path.push_str(&path.canonicalize()?.display().to_string());
+        mcl.add_class(&path);
     }
 
     // Get assets
@@ -97,5 +97,5 @@ pub(crate) async fn get_minecraft(
             }
         }
     }
-    Ok(class_path)
+    Ok(())
 }
