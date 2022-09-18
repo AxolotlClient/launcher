@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   id="Layer_1"
+   data-name="Layer 1"
+   viewBox="0 0 45 35.000002"
+   version="1.1"
+   sodipodi:docname="arrow_up.svg"
+   width="45"
+   height="35"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview16"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="4.3734323"
+     inkscape:cx="72.483116"
+     inkscape:cy="68.481683"
+     inkscape:window-width="1846"
+     inkscape:window-height="1016"
+     inkscape:window-x="74"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="Layer_1" />
+  <defs
+     id="defs7">
+    <style
+       id="style2">.cls-1{fill:none;}.cls-2{clip-path:url(#clip-path);fill:#ffffff}</style>
+    <clipPath
+       id="clip-path">
+      <rect
+         class="cls-1"
+         x="45.650002"
+         y="42.619999"
+         width="49.580002"
+         height="52.43"
+         id="rect4" />
+    </clipPath>
+  </defs>
+  <title
+     id="title9">settings</title>
+  <path
+     sodipodi:type="star"
+     style="fill:#ffffff;fill-rule:evenodd;stroke-linecap:square"
+     id="path351"
+     inkscape:flatsided="false"
+     sodipodi:sides="3"
+     sodipodi:cx="62.112427"
+     sodipodi:cy="58.102116"
+     sodipodi:r1="23.194191"
+     sodipodi:r2="11.597095"
+     sodipodi:arg1="0.52359878"
+     sodipodi:arg2="1.5707963"
+     inkscape:rounded="0"
+     inkscape:randomized="0"
+     d="m 82.199185,69.699211 -20.086758,-1e-6 -20.086759,1e-6 10.04338,-17.395642 10.043379,-17.395644 10.043378,17.395643 z"
+     inkscape:transform-center-y="-5.8333539"
+     transform="matrix(1.1201409,0,0,1.005999,-47.07467,-35.117337)" />
+  <metadata
+     id="metadata413">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>settings</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+</svg>

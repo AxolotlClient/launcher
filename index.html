@@ -9,12 +9,28 @@
 <body>
     <div class="bg_image"></div>
     <div class="main" id="main">
-        <button class="play" alt="Play">
-            Play
-        </button>
-        <a class="open_settings">
-            <img src="./assets/settings.svg" width="50px" height="50px" alt="Open Settings">
-        </a>
+        <div class="actions">
+            <div class="instance" alt="Select instance">
+                <div class="instance_others">
+                    <button>
+                        <p>1.8.9</p>
+                    </button>
+                    <button>
+                        <p>CTS</p>
+                    </button>
+                </div>
+                <button class="current_instance">
+                    <p>1.19.2</p>
+                    <img src="./assets/arrow_up.svg">
+                </button>
+            </div>
+            <button class="play" alt="Play">
+                Play
+            </button>
+            <a class="open_settings">
+                <img src="./assets/settings.svg" width="50px" height="50px" alt="Open Settings">
+            </a>
+        </div>
     </div>
     <div class="settings" id="settings" style="display: none;">
         <a class="close_settings">
