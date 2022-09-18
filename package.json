@@ -9,7 +9,7 @@
     "tauri-plugin-fs-extra-api": "github:tauri-apps/tauri-plugin-fs-extra#0bafb6d5"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.0.5",
+    "@tauri-apps/cli": "^1.1.1",
     "vite": "^3.0.4"
   }
 }
