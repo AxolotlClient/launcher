@@ -19,7 +19,7 @@ impl Version {
 
         let eight_req = VersionReq::parse("<1.17")?;
 
-        if !eight_req.matches(&mc_version) {
+        if eight_req.matches(&mc_version) {
             return Ok(Version::Java8);
         } else {
             return Ok(Version::Java17);

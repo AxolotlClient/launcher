@@ -5,7 +5,7 @@ use reqwest::Client;
 use semver::VersionReq;
 use serde_json::Value;
 
-use crate::util::{download_file, extract_file, is_dir_empty, DataDir};
+use crate::util::{download_file, extract_file, is_dir_empty, request_file, DataDir};
 
 use super::mojang_meta::ClassPath;
 
@@ -15,8 +15,11 @@ pub(crate) async fn install_modpack(
     mc_version: &str,
     data_dir: &DataDir,
     client: &Client,
-    class_path: &ClassPath,
+    class_path: &mut ClassPath,
 ) -> Result<ModPath> {
+    // todo: improve modularity. take mrpack path as argument.
+    // extract mrpack in temp & ditch it afterwards.
+    // leave mrpack file alone
     let mut mod_path: ModPath = String::new();
 
     let modpack_dir = data_dir.get_instance_mrpack_dir(slug, mc_version);
@@ -30,13 +33,15 @@ pub(crate) async fn install_modpack(
     // Download mods
     for file in index_json["files"].as_array().unwrap() {
         let path = data_dir.get_mod_dir(slug, mc_version, file["path"].as_str().unwrap());
-        download_file(
-            &file["downloads"][0].as_str().unwrap(),
-            Some(&file["hashes"]["sha1"].as_str().unwrap()),
-            &path,
-            Some(client),
-        )
-        .await?;
+        if !path.try_exists()? {
+            download_file(
+                &file["downloads"][0].as_str().unwrap(),
+                Some(&file["hashes"]["sha1"].as_str().unwrap()),
+                &path,
+                Some(client),
+            )
+            .await?;
+        }
         if !mod_path.is_empty() {
             mod_path.push_str(":");
         }
@@ -49,7 +54,54 @@ pub(crate) async fn install_modpack(
     // Apply overrides
     dircpy::copy_dir(&override_dir, &minecraft_dir)?;
 
+    // Install fabric
     if !&index_json["dependencies"]["fabric-loader"].is_null() {
+        // install net.fabricmc.fabric-loader. construct classpath
+        let fabric_version = &index_json["dependencies"]["fabric-loader"]
+            .as_str()
+            .unwrap();
+        let lib_path = maven_download(
+            "https://maven.fabricmc.net/",
+            "net.fabricmc",
+            "fabric-loader",
+            &fabric_version,
+            class_path,
+            data_dir,
+            client,
+            None,
+        )
+        .await?;
+        class_path.push_str(":");
+        class_path.push_str(&lib_path);
+
+        // get json. get libraries from json & install them. construct classpath
+        let url = format!(
+            "https://maven.fabricmc.net/net/fabricmc/fabric-loader/{}/fabric-loader-{}.json",
+            fabric_version, fabric_version
+        );
+        let resp = request_file(&url).await?; // woo i love json parsing. i could do it all day because im so filled with joy
+        let resp: Value = serde_json::from_str(&resp)?;
+
+        for i in resp["libraries"]["common"].as_array().unwrap() {
+            dbg!(&i);
+            let mut name = i["name"].as_str().unwrap().split(":");
+            let lib_path = maven_download(
+                i["url"].as_str().unwrap(),
+                name.next().unwrap(),
+                name.next().unwrap(),
+                name.next().unwrap(),
+                class_path,
+                data_dir,
+                client,
+                None,
+            )
+            .await?;
+            class_path.push_str(":");
+            class_path.push_str(&lib_path);
+            dbg!(&lib_path);
+        }
+
+        // find intermediary maven & download correct intermediary version
         let version_string = &index_json["dependencies"]["minecraft"].as_str().unwrap();
         let mc_version = semver::Version::parse(&version_string.replace("_", "+"))?;
 
@@ -58,15 +110,32 @@ pub(crate) async fn install_modpack(
         let cts_req = version_string == &"1.16_combat-6";
 
         // todo: support https://minecraft-cursed-legacy.github.io/
-        let maven = match mc_version {
+        let intermediary_maven = match &mc_version {
             x if fabric_req.matches(&x) => "https://maven.fabricmc.net/",
             x if legacy_fabric_req.matches(&x) => "https://maven.legacyfabric.net/",
             x if cts_req => "https://maven.combatreforged.com/",
             _ => bail!("Unsupported!"),
         };
+        let identifier = match &mc_version {
+            x if legacy_fabric_req.matches(&x) => "net.legacyfabric",
+            x => "net.fabricmc",
+        };
+        let path = maven_download(
+            intermediary_maven,
+            identifier,
+            "intermediary",
+            version_string,
+            class_path,
+            data_dir,
+            client,
+            Some(&"v2"),
+        )
+        .await?;
+        class_path.push_str(":");
+        class_path.push_str(&path);
     }
 
-    todo!("Install modloader");
+    // todo!("Install modloader");
 
     Ok(mod_path)
 }
@@ -101,7 +170,7 @@ async fn download_mrpack(
     // Get versions
     let modrinth = ferinth::Ferinth::default();
     let versions = modrinth
-        .list_versions_filtered(slug, Some(&["quilt", "fabric"]), Some(&[mc_version]), None)
+        .list_versions_filtered(slug, Some(&["fabric"]), Some(&[mc_version]), None)
         .await
         .unwrap();
 
@@ -135,4 +204,38 @@ async fn download_mrpack(
 
     fs::remove_file(file)?;
     Ok(())
+}
+async fn maven_download(
+    maven_url: &str,
+    identifier: &str,
+    name: &str,
+    version: &str,
+    class_path: &mut ClassPath,
+    data_dir: &DataDir,
+    client: &Client,
+    suffix: Option<&str>,
+) -> Result<String> {
+    dbg!(identifier);
+
+    let path_suffix = match suffix {
+        Some(s) => {
+            format!(
+                "{}/{name}/{version}/{name}-{version}-{s}.jar",
+                &identifier.replace(".", "/"),
+            )
+        }
+        None => {
+            format!(
+                "{}/{name}/{version}/{name}-{version}.jar",
+                &identifier.replace(".", "/"),
+            )
+        }
+    };
+
+    let url = maven_url.to_owned() + &path_suffix;
+    let path = data_dir.get_library_dir(&path_suffix)?;
+    if !path.try_exists()? {
+        download_file(&url, None, &path, Some(&client)).await?;
+    }
+    Ok(path.canonicalize()?.display().to_string())
 }

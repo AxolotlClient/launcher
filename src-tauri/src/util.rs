@@ -9,6 +9,8 @@ use anyhow::{Context, Result};
 use reqwest::Client;
 use tauri::api::path::data_dir;
 
+use crate::minecraft;
+
 pub(crate) async fn request_file(url: &str) -> Result<String> {
     Ok(reqwest::get(url).await?.text().await?)
 }

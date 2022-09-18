@@ -27,13 +27,13 @@ pub(crate) async fn get_minecraft(
     let resp = request_file(url).await?;
     let resp: Value = serde_json::from_str(&resp)?;
 
-    let url = resp["downloads"]["client"]["url"].as_str().unwrap();
+    let java_version = resp["javaVersion"]["majorVersion"].as_i64().unwrap();
+    // todo: download java from HERE with the version they give you instead of trying to figure out out
+    // like an idiot.
+    let main_class = resp["mainClass"].as_str().unwrap();
+    // todo: this too. maybe make a Meta struct and return java version, main class and class path. make class path mutable
 
-    dbg!(url);
-    // let mut file_path = data_dir.get_version_dir(version);
-    // file_path.push(format!("libraries/com/mojang/minecraft/{}/", version));
-    // fs::create_dir_all(&file_path)?;
-    // file_path.push("client.jar");
+    let url = resp["downloads"]["client"]["url"].as_str().unwrap();
 
     println!("Downloading Minecraft Client");
 
@@ -97,6 +97,5 @@ pub(crate) async fn get_minecraft(
             }
         }
     }
-    dbg!(&class_path);
     Ok(class_path)
 }
