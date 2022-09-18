@@ -93,7 +93,7 @@ async fn launch_minecraft(
         .args([
             &format!("-Dfabric.addMods={}", mod_path),
             &format!(
-                "-Djava.library.path={}libraries",
+                "-Djava.library.path={}/libraries",
                 instance.path.canonicalize()?.display().to_string()
             ),
             "-cp",

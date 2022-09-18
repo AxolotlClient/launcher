@@ -7,17 +7,18 @@
 </head>
 
 <body>
-    <div class="main">
-        <button onClick="import invoke from '@tauri-apps/api';tauri.invoke('launch')" class="play">
+    <div class="bg_image"></div>
+    <div class="main" id="main">
+        <button class="play">
             Play
         </button>
         <a class="open_settings">
-            <img src="./assets/settings_icon.svg" width="32px" height="32px" alt="Open Settings">
+            <img src="./assets/settings.svg" width="50px" height="50px" alt="Open Settings">
         </a>
     </div>
-    <div class="settings" style="display: none;">
+    <div class="settings" id="settings" style="display: none;">
         <a class="close_settings">
-            <img src="./assets/exit.svg" width="32px" height="32px" alt="Close Settings">
+            <img src="./assets/exit.svg" width="50px" height="50px" alt="Close Settings">
         </a>
         <div class="tabs">
 
