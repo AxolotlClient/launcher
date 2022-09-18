@@ -119,7 +119,7 @@ async fn launch_minecraft(
             "-Xmx2048M",
             "-Xms2048M",
             "-Xmn128",
-            "--gameDir",
+            "--gameDir", // this is broken fixme todo
             &instance
                 .get_instance_minecraft_dir(slug, version)
                 .canonicalize()?
