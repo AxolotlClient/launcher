@@ -105,12 +105,27 @@ async fn launch_minecraft(
     // --gameDir $HOME/.axolotlclient/instances/Axolotlclient-1.8 --assetsDir $HOME/.axolotlclient/common/assets
     // --assetIndex 1.8 --accessToken <accessToken> --uuid <uuid> --width 800 --height 480
 
+    // dbg!(format!(
+    //     "-Djava.library.path={}/libraries",
+    //     instance.path.canonicalize()?.display().to_string()
+    // ));
+    // dbg!(format!(
+    //     "{}",
+    //     instance
+    //         .get_instance_minecraft_dir(slug, version)
+    //         .canonicalize()?
+    //         .display()
+    //         .to_string()
+    // ));
+    // dbg!(format!("-Dfabric.addMods={}", mcl.mod_path));
+
     // todo: add mods, add fabric libs to classpath (including fabric loader!)
     let output = Command::new(java.display().to_string())
+        .current_dir(instance.get_instance_minecraft_dir(slug, version))
         .args([
             &format!("-Dfabric.addMods={}", mcl.mod_path),
             &format!(
-                "-Djava.library.path={}/libraries",
+                "-Djava.library.path={}/libraries/",
                 instance.path.canonicalize()?.display().to_string()
             ),
             "-cp",
@@ -120,11 +135,14 @@ async fn launch_minecraft(
             "-Xms2048M",
             "-Xmn128",
             "--gameDir", // this is broken fixme todo
-            &instance
-                .get_instance_minecraft_dir(slug, version)
-                .canonicalize()?
-                .display()
-                .to_string(),
+            &format!(
+                "{}/",
+                instance
+                    .get_instance_minecraft_dir(slug, version)
+                    .canonicalize()?
+                    .display()
+                    .to_string()
+            ),
             "--assetIndex",
             version,
             "--assetsDir",
