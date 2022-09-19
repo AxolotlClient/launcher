@@ -1,6 +1,7 @@
 use std::fs;
 use std::fs::File;
 use std::io::BufReader;
+use std::io::Read;
 use std::io::Write;
 use std::path::PathBuf;
 
@@ -9,10 +10,17 @@ use anyhow::{Context, Result};
 use reqwest::Client;
 use tauri::api::path::data_dir;
 
-use crate::minecraft;
-
-pub(crate) async fn request_file(url: &str) -> Result<String> {
-    Ok(reqwest::get(url).await?.text().await?)
+pub(crate) async fn request_file(url: &str, client: &Client) -> Result<String> {
+    Ok(client
+        .get(url)
+        .header(
+            "User-Agent",
+            "AxolotlClient. Contact me@j0.lol for concerns.",
+        )
+        .send()
+        .await?
+        .text()
+        .await?)
 }
 
 pub(crate) async fn download_file(
@@ -26,10 +34,7 @@ pub(crate) async fn download_file(
         Some(client) => {
             client
                 .get(url)
-                .header(
-                    "User-Agent",
-                    "AxolotlClient. Contact me@j0.lol for concerns.",
-                )
+                .header("User-Agent", "github_org/AxolotlClient (me@j0.lol)")
                 .send()
                 .await?
         }
@@ -45,6 +50,18 @@ pub(crate) async fn download_file(
     return Ok(());
 }
 
+pub(crate) fn write_to_file(contents: &str, path: &PathBuf) -> Result<()> {
+    let mut file = File::create(&path)?;
+    file.write_all(contents.as_bytes())?;
+    Ok(())
+}
+
+pub(crate) fn read_from_file(path: &PathBuf) -> Result<String> {
+    let mut file = File::open(&path)?;
+    let mut string = String::new();
+    file.read_to_string(&mut string)?;
+    Ok(string)
+}
 fn verify_hash(file: &bytes::Bytes, sha1: &str) -> bool {
     // todo: actually calculate hash. crypto crates suck.
     // sha1 isnt collision resistant and sha512 may take too long.
@@ -81,78 +98,67 @@ pub(crate) fn is_dir_empty(dir: &PathBuf) -> Result<bool> {
     Ok(dir.read_dir()?.next().is_none())
 }
 
-pub(crate) struct DataDir {
-    pub(crate) path: PathBuf,
-}
-
+pub(crate) struct DataDir {}
 impl DataDir {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn get_base_dir() -> PathBuf {
         let mut dir = data_dir().unwrap();
         dir.push("AxolotlClient/");
         fs::create_dir_all(&dir).unwrap();
-
-        Self { path: dir }
+        dir
     }
-    pub(crate) fn get_java_dir(&self, version: &str) -> PathBuf {
-        let mut dir = self.path.clone();
+    pub(crate) fn get_java_dir(version: &str) -> PathBuf {
+        let mut dir = DataDir::get_base_dir().clone();
         dir.push(format!("java/{version}/"));
         fs::create_dir_all(&dir).unwrap();
         dir
     }
 
-    pub(crate) fn get_instance_dir(&self, slug: &str, version: &str) -> PathBuf {
-        let mut dir = self.path.clone();
-        dir.push(format!("instances/{slug}/{version}/"));
+    pub(crate) fn get_instance_dir(name: &str) -> PathBuf {
+        let mut dir = DataDir::get_base_dir().clone();
+        dir.push(format!("instances/{name}/"));
         fs::create_dir_all(&dir).unwrap();
         dir
     }
 
-    pub(crate) fn get_instance_mrpack_dir(&self, slug: &str, version: &str) -> PathBuf {
-        let mut dir = self.path.clone();
-        dir.push(format!("instances/{slug}/{version}/mrpack/"));
+    pub(crate) fn get_instance_minecraft_dir(name: &str) -> PathBuf {
+        let mut dir = DataDir::get_instance_dir(&name).clone();
+        dir.push(format!(".minecraft/"));
         fs::create_dir_all(&dir).unwrap();
         dir
     }
-
-    pub(crate) fn get_instance_minecraft_dir(&self, slug: &str, version: &str) -> PathBuf {
-        let mut dir = self.path.clone();
-        dir.push(format!("instances/{slug}/{version}/.minecraft/"));
-        fs::create_dir_all(&dir).unwrap();
-        dir
-    }
-    pub(crate) fn get_mod_dir(&self, slug: &str, version: &str, path: &str) -> PathBuf {
-        let mut dir = self.path.clone();
-        dir.push(format!("instances/{slug}/{version}/.minecraft/{}", path));
+    pub(crate) fn get_mod_dir(name: &str, path: &str) -> PathBuf {
+        let mut dir = DataDir::get_instance_minecraft_dir(&name).clone();
+        dir.push(path);
         fs::create_dir_all(&dir.parent().unwrap()).unwrap();
         dir
     }
 
-    pub(crate) fn get_library_dir(&self, path: &str) -> Result<PathBuf> {
-        let mut dir = self.path.clone();
+    pub(crate) fn get_library_dir(path: &str) -> Result<PathBuf> {
+        let mut dir = DataDir::get_base_dir().clone();
         dir.push(format!("libraries/{}", path));
         fs::create_dir_all(&dir.parent().unwrap())?;
         Ok(dir)
     }
-    pub(crate) fn get_assets_dir(&self) -> PathBuf {
-        let mut dir = self.path.clone();
+    pub(crate) fn get_assets_dir() -> PathBuf {
+        let mut dir = DataDir::get_base_dir().clone();
         dir.push("assets/");
         fs::create_dir_all(&dir.parent().unwrap()).unwrap();
         dir
     }
 
-    pub(crate) fn get_asset_dir(&self, hash: &str) -> Result<PathBuf> {
-        let mut dir = self.path.clone();
+    pub(crate) fn get_asset_dir(hash: &str) -> Result<PathBuf> {
+        let mut dir = DataDir::get_assets_dir().clone();
         dir.push(format!(
-            "assets/objects/{}/{}",
+            "objects/{}/{}",
             hash.split_at(2 * hash.chars().nth(0).unwrap().len_utf8()).0,
             hash
         ));
         fs::create_dir_all(&dir.parent().unwrap())?;
         Ok(dir)
     }
-    pub(crate) fn get_asset_index_dir(&self, version: &str) -> Result<PathBuf> {
-        let mut dir = self.path.clone();
-        dir.push(format!("assets/indexes/{version}.json"));
+    pub(crate) fn get_asset_index_dir(version: &str) -> Result<PathBuf> {
+        let mut dir = DataDir::get_assets_dir().clone();
+        dir.push(format!("indexes/{version}.json"));
         fs::create_dir_all(&dir.parent().unwrap())?;
         Ok(dir)
     }
