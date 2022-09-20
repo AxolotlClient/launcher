@@ -23,7 +23,6 @@ body {
 button {
     height: 50px;
     width: 250px;
-    background-color: #aa406c;
     cursor: pointer;
     border: none;
     color: white;
@@ -60,6 +59,8 @@ button:hover {
 }
 
 .play {
+    
+    background-color: #aa406c;
     position: absolute;
     top: calc(50% - 25px);
     right: calc(50% - 125px);
@@ -111,37 +112,55 @@ button:hover {
     transition: transform linear .2s;
 }
 
-.main .open_settings {
-    cursor: pointer;
-    position: fixed;
-    right: 20px;
-    top: 30px;
-    color: aqua;
-    stroke: FF3355;
+.account_settings button {
+    background: transparent;
+    border-radius: 0;
 }
 
-.main .open_settings:hover,
-.main .open_settings:focus {
-    outline: #ff00aa line 2px;
-    text-shadow: 0px 0px 20px #fff, 0px 0px 20px #fff;
-    stroke: #fff;
+.account_settings button:hover {
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
-.settings:before {
-    opacity: 0;
-    transition: all 0.25s ease;
+.account_settings {
+    position: absolute;
+    right: 18px;
+    bottom: calc(50% - 25px);
+    width: 250px;
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.1);
+    transition: background-color ease-in-out .3s, height ease-in-out .3s;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.account_settings.extended {
+    height: 100px;
 }
 
 .settings {
-    height: 100%;
-    top: 0;
+    position: absolute;
     overflow: hidden;
-    transition:  ease .2s;
+    bottom: 50px;
 }
 
-.settings .close_settings {
-    cursor: pointer;
+.current_account {
     position: absolute;
-    right: 20px;
-    top: 30px;
+    left: 0;
+    bottom: 0;
+    margin: 0;
+}
+
+.current_account img {
+    position: absolute;
+    top: calc(50% - 6px);
+    right: 15px;
+    height: 12px;
+    transition: transform linear .2s;
+}
+
+.current_account #avatar {
+    right: 200px;
+    width: 50px;
+    height: 50px;
+    top: 0px;
 }

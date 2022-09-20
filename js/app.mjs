@@ -6,6 +6,8 @@ playButton.onclick = async() => {
     invoke("launch");
 };
 
+document.getElementById("avatar").src = "https://crafatar.com/avatars/[uuid].png";
+
 const instance = document.querySelector(".instance");
 const currentInstanceButton = document.querySelector(".current_instance");
 let instanceMenuOpen = false;
@@ -17,6 +19,24 @@ instance.querySelectorAll("button").forEach((button) => button.onclick = () => {
     const old = currentInstanceButton.innerText;
     currentInstanceButton.querySelector("p").innerText = button.innerText;
     button.querySelector("p").innerText = old;
+    if(currentInstanceButton.querySelector("p").innerText !== old){
+        console.log("Set instance to: "+currentInstanceButton.innerText)
+        // TODO put in a tauri event to get this to the backend.
+        // I don't want to touch the rust code because I am afraid of breaking stuff
+    }
+});
+
+const accountSettings = document.querySelector(".account_settings");
+let accountMenuOpen = false;
+
+accountSettings.querySelectorAll("button").forEach((button) => button.onclick = () => {
+    accountSettings.classList.toggle("extended");
+    accountMenuOpen = !accountMenuOpen;
+    document.querySelector(".current_account").querySelectorAll("img").forEach((img) => {
+        if(img.src.includes("arrow_up.svg")){
+            img.style.transform = accountMenuOpen ? "scaleY(-1)" : "scaleY(1)";
+        }
+    })
 });
 
 const settingsButton = document.querySelector(".open_settings");
