@@ -7,17 +7,59 @@ pub(crate) mod config;
 pub(crate) mod minecraft;
 pub(crate) mod util;
 
+use crate::config::get_instance_config;
+use crate::config::{set_instance_config, InstanceConfig};
 use anyhow::Result;
+use minecraft::{
+    launcher::launch_minecraft,
+    modpack::{fetch_mrpack, install_mrpack},
+};
+use reqwest::Client;
 use tauri_plugin_fs_extra::FsExtra;
 
 #[tauri::command]
-async fn launch() -> Result<(), String> {
+async fn launch(instance_slug: &str) -> Result<(), String> {
     // Read config
-    let config = config::load();
 
-    // Launch the game
-    minecraft::launcher::launch(config).await.unwrap();
+    match get_instance_config(instance_slug).await {
+        Ok(_) => launch_minecraft(instance_slug).await.unwrap(),
+        Err(_) => {
+            return Err("Instance has not been installed properly, or does not exist".to_string())
+        }
+    };
 
+    Ok(())
+}
+
+#[tauri::command]
+async fn install_modrinth_pack(name: &str, version_id: &str) -> Result<(), String> {
+    // instance slug must be validated, with no special characters
+    let instance_slug: String = name
+        .trim()
+        .chars()
+        .map(|c| if c.is_alphanumeric() { c } else { '_' })
+        .collect();
+
+    let c = Client::builder().build().unwrap();
+
+    let (mrpack_path, modrinth) = fetch_mrpack(&version_id, &c).await.unwrap();
+
+    let launch = install_mrpack(&instance_slug, &mrpack_path, &c)
+        .await
+        .unwrap();
+
+    set_instance_config(
+        &InstanceConfig {
+            name: name.to_string(),
+            remote: "modrinth".to_owned(),
+            modrinth: Some(modrinth),
+            local_file: None,
+            launch,
+        },
+        &instance_slug,
+    )
+    .await
+    .unwrap();
     Ok(())
 }
 
@@ -42,9 +84,12 @@ async fn launch() -> Result<(), String> {
 // }
 
 fn main() {
+    // check if default packs are installed
+    // if not install them
+
     tauri::Builder::default()
         .plugin(FsExtra::default())
-        .invoke_handler(tauri::generate_handler![launch])
+        .invoke_handler(tauri::generate_handler![launch, install_modrinth_pack])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
