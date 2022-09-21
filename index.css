@@ -164,3 +164,27 @@ button:hover {
     height: 50px;
     top: 0px;
 }
+
+.settings_view {
+    display: none;
+    position: absolute;
+    top: 0px;
+    color: #ffff;
+    font-size: 18;
+}
+
+.settings_view .tabs {
+    position: absolute;
+    left: 8vw;
+    top: 20vh;/*calc(100% +  150px);*/
+}
+
+.settings_view p {
+    cursor: pointer;
+    transition: ease-in-out .3s;
+}
+
+.settings_view p:hover {
+    text-shadow: 1px 1px 5px #fff;
+    transition: ease-in-out .3s;
+}

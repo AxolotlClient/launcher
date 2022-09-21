@@ -6,6 +6,7 @@ playButton.onclick = async() => {
     invoke("launch");
 };
 
+document.querySelector(".current_account").querySelector("p").innerText = "[YourNameHere]"
 document.getElementById("avatar").src = "https://crafatar.com/avatars/[uuid].png";
 
 const instance = document.querySelector(".instance");
@@ -52,7 +53,7 @@ document.body.addEventListener("mouseup", (event) => {
 
 const settingsButton = document.querySelector(".open_settings");
 const main = document.querySelector(".main");
-const settings = document.querySelector(".settings");
+const settings = document.querySelector(".settings_view");
 
 settingsButton.onclick = () => {
     main.style.display = "none";
