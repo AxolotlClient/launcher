@@ -7,7 +7,7 @@ license = ""
 repository = ""
 default-run = "app"
 edition = "2021"
-rust-version = "1.57"
+rust-version = "1.63"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -24,6 +24,19 @@ ring = "0.16.20"
 error-chain = "0.12.4"
 data-encoding = "2.3.2"
 zip-extract = "0.1.1"
+config = "0.13.2"
+toml = "0.5.9"
+ferinth = "2"
+sha-1 = "0.10.0"
+anyhow = "1"
+bytes = "1"
+flate2 = "1"
+tar = "0.4.38"
+glob = "0.3.0"
+crossbeam = "0.8"
+futures = "0.3"
+semver = "1.0"
+dircpy = "0.3.13"
 
 [features]
 # by default Tauri runs in production mode

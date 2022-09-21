@@ -1,0 +1,9 @@
+[pack]
+"remote" = "modrinth"
+
+[pack.modrinth]
+"slug" = "stellar"
+
+[pack.target]
+"version" = "1.19.2"
+"modloader" = "quilt"

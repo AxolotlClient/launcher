@@ -3,62 +3,93 @@
     windows_subsystem = "windows"
 )]
 
-use data_encoding::HEXLOWER;
-use ring::digest::{Context, SHA1_FOR_LEGACY_USE_ONLY};
-use std::{io::{BufReader, Read, Write, Cursor}, fs::File, path::PathBuf};
+pub(crate) mod config;
+pub(crate) mod minecraft;
+pub(crate) mod util;
+
+use crate::config::get_instance_config;
+use crate::config::{set_instance_config, InstanceConfig};
+use anyhow::Result;
+use minecraft::{
+    launcher::launch_minecraft,
+    modpack::{fetch_mrpack, install_mrpack},
+};
+use reqwest::Client;
 use tauri_plugin_fs_extra::FsExtra;
 
-macro_rules! str_err {
-    ($res:expr) => {
-        $res.map_err(|err| err.to_string())
-    };
-}
-
-// next two functions: adapted from "Rust Cookbook" - I don't know rust
-
 #[tauri::command]
-async fn download_file(url: String, file: String) -> Result<(), String> {
-    let target = url;
-    let response = str_err!(reqwest::get(target).await)?;
-    let mut dest = str_err!(File::create(file))?;
-    let content = str_err!(response.bytes().await)?;
-    str_err!(dest.write_all(&content))?;
+async fn launch(instance_slug: &str) -> Result<(), String> {
+    // Read config
+
+    match get_instance_config(instance_slug).await {
+        Ok(_) => launch_minecraft(instance_slug).await.unwrap(),
+        Err(_) => {
+            return Err("Instance has not been installed properly, or does not exist".to_string())
+        }
+    };
+
     Ok(())
 }
 
 #[tauri::command]
-async fn compute_sha1(file: String) -> Result<String, String> {
-    let input = str_err!(File::open(file))?;
-    let mut reader = BufReader::new(input);
-    let mut context = Context::new(&SHA1_FOR_LEGACY_USE_ONLY);
-    let mut buffer = [0; 1024];
+async fn install_modrinth_pack(name: &str, version_id: &str) -> Result<(), String> {
+    // instance slug must be validated, with no special characters
+    let instance_slug: String = name
+        .trim()
+        .chars()
+        .map(|c| if c.is_alphanumeric() { c } else { '_' })
+        .collect();
 
-    loop {
-        let count = str_err!(reader.read(&mut buffer))?;
-        if count == 0 {
-            break;
-        }
-        context.update(&buffer[..count]);
-    }
+    let c = Client::builder().build().unwrap();
 
-    Ok(HEXLOWER.encode(context.finish().as_ref()))
+    let (mrpack_path, modrinth) = fetch_mrpack(&version_id, &c).await.unwrap();
+
+    let launch = install_mrpack(&instance_slug, &mrpack_path, &c)
+        .await
+        .unwrap();
+
+    set_instance_config(
+        &InstanceConfig {
+            name: name.to_string(),
+            remote: "modrinth".to_owned(),
+            modrinth: Some(modrinth),
+            local_file: None,
+            launch,
+        },
+        &instance_slug,
+    )
+    .await
+    .unwrap();
+    Ok(())
 }
 
-#[tauri::command]
-async fn extract_file(archive: String, target_dir: String) -> Result<(), String> {
-    match zip_extract::extract(Cursor::new(&archive), &PathBuf::from(&target_dir), false) {
-        Ok(()) => return Ok(()),
-        Err(error) => return Err("Could not extract Zip file: ".to_owned()
-        +&archive + " to directory "
-        +&target_dir + " with Error "
-        +&error.to_string()),
-    };
-}
+// next two functions: adapted from "Rust Cookbook" - I don't know rust
+
+// #[tauri::command]
+// async fn compute_sha1(file: String) -> Result<String, String> {
+//     let input = str_err!(File::open(file))?;
+//     let mut reader = BufReader::new(input);
+//     let mut context = Context::new(&SHA1_FOR_LEGACY_USE_ONLY);
+//     let mut buffer = [0; 1024];
+//
+//     loop {
+//         let count = str_err!(reader.read(&mut buffer))?;
+//         if count == 0 {
+//             break;
+//         }
+//         context.update(&buffer[..count]);
+//     }
+//
+//     Ok(HEXLOWER.encode(context.finish().as_ref()))
+// }
 
 fn main() {
+    // check if default packs are installed
+    // if not install them
+
     tauri::Builder::default()
         .plugin(FsExtra::default())
-        .invoke_handler(tauri::generate_handler![download_file, compute_sha1, extract_file])
+        .invoke_handler(tauri::generate_handler![launch, install_modrinth_pack])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

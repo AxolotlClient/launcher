@@ -7,17 +7,45 @@
 </head>
 
 <body>
-    <div class="main">
-        <button class="play">
-            Play
-        </button>
-        <a class="open_settings">
-            <img src="./assets/settings_icon.svg" width="32px" height="32px" alt="Open Settings">
-        </a>
+    <div class="bg_image"></div>
+    <div class="main" id="main">
+        <div class="actions">
+            <div class="instance" alt="Select instance">
+                <div class="instance_others">
+                    <button>
+                        <p>1.8.9</p>
+                    </button>
+                    <button>
+                        <p>CTS</p>
+                    </button>
+                </div>
+                <button class="current_instance">
+                    <p>1.19.2</p>
+                    <img src="./assets/arrow_up.svg">
+                </button>
+            </div>
+            <button class="play" alt="Play">
+                Play
+            </button>
+            <div class="account_settings" alt="Account & Settings">
+                <div class="settings">
+                    <button class="open_settings" alt="Open Settings">
+                        <p>Settings</p>
+                    </button>
+                </div>
+                <div class="account">
+                    <button class="current_account">
+                        <img id="avatar" alt="Skin Head">
+                        <p>YourNameHere</p>
+                        <img src="./assets/arrow_up.svg">
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="settings" style="display: none;">
+    <div class="settings" id="settings" style="display: none;">
         <a class="close_settings">
-            <img src="./assets/exit.svg" width="32px" height="32px" alt="Close Settings">
+            <img src="./assets/exit.svg" width="50px" height="50px" alt="Close Settings">
         </a>
         <div class="tabs">
 
