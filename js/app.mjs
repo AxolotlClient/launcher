@@ -27,16 +27,27 @@ instance.querySelectorAll("button").forEach((button) => button.onclick = () => {
 });
 
 const accountSettings = document.querySelector(".account_settings");
+const currentAccountButton = document.querySelector(".current_account");
 let accountMenuOpen = false;
 
 accountSettings.querySelectorAll("button").forEach((button) => button.onclick = () => {
     accountSettings.classList.toggle("extended");
     accountMenuOpen = !accountMenuOpen;
     document.querySelector(".current_account").querySelectorAll("img").forEach((img) => {
-        if(img.src.includes("arrow_up.svg")){
+        if(img.src.includes("arrow_up.svg")) {
             img.style.transform = accountMenuOpen ? "scaleY(-1)" : "scaleY(1)";
         }
     })
+});
+
+document.body.addEventListener("mouseup", (event) => {
+    if(!accountSettings.contains(event.target) && accountSettings.classList.contains("extended")) {
+        currentAccountButton.click();
+    }
+
+    if(!instance.contains(event.target) && instance.classList.contains("extended")) {
+        currentInstanceButton.click();
+    }
 });
 
 const settingsButton = document.querySelector(".open_settings");
