@@ -23,6 +23,10 @@ instance.querySelectorAll("button").forEach((button) => button.onclick = () => {
         console.log("Set instance to: "+currentInstanceButton.innerText)
         // TODO put in a tauri event to get this to the backend.
         // I don't want to touch the rust code because I am afraid of breaking stuff
+        // jo note: the way i designed instances is that theres a name and a slug
+        // u want to pass the slug to the tauri launch command
+        // yeah so you want to store the name and slug somehow (preferred) or
+        // make a converter on the fly (bad, hacky)
     }
 });
 
