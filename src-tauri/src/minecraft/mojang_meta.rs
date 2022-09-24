@@ -10,7 +10,7 @@ use crate::{
 
 pub(crate) async fn get_minecraft(version: &str, client: &Client) -> Result<(Java, Minecraft)> {
     let mut class_path = JarPath::new();
-    let main_class = String::new();
+    let main_class: String;
     let resp = request_file(
         "https://launchermeta.mojang.com/mc/game/version_manifest.json",
         &client,
@@ -32,7 +32,7 @@ pub(crate) async fn get_minecraft(version: &str, client: &Client) -> Result<(Jav
     let java = get_java(java_version, &client).await?;
     // todo: download java from HERE with the version they give you instead of trying to figure out out
     // like an idiot.
-    // mcl.main_class = resp["mainClass"].as_str().unwrap().to_owned();
+    main_class = resp["mainClass"].as_str().unwrap().to_owned();
     // todo: this too. maybe make a Meta struct and return java version, main class and class path. make class path mutable
 
     let url = resp["downloads"]["client"]["url"].as_str().unwrap();

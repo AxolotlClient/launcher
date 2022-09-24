@@ -1,6 +1,6 @@
 use std::{env, fs, path::PathBuf};
 
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use reqwest::Client;
 use semver::VersionReq;
 use serde_json::Value;
@@ -30,15 +30,20 @@ pub(crate) async fn install_mrpack(
     let f = fs::read_to_string(index_json)?;
     let index_json: Value = serde_json::from_str(&f)?;
 
-    let mut launch = install_modloader(client, &index_json).await?;
+    dbg!("Installing modloader");
+    let mut launch = install_modloader(client, &index_json)
+        .await
+        .context("Failed installing modloader")?;
+    dbg!("Installing mods");
     install_mods(
         &instance_slug,
         client,
         &index_json,
-        &temp_dir,
+        &mrpack_contents,
         &mut launch.modloader.mod_path,
     )
-    .await?;
+    .await
+    .context("Failed installing mods")?;
 
     Ok(launch)
 }
@@ -275,5 +280,6 @@ async fn maven_download(
     if !path.try_exists()? {
         download_file(&url, None, &path, Some(&client)).await?;
     }
+    dbg!("hi");
     Ok(path)
 }

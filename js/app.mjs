@@ -3,7 +3,8 @@ import { invoke } from "@tauri-apps/api";
 const playButton = document.querySelector(".play");
 
 playButton.onclick = async() => {
-    invoke("launch");
+    invoke("install_modrinth_pack", { name: 'Additive-1.19.2', versionId: '8nZjjk2n'});
+    invoke("launch", { instanceSlug: 'additive_1_19_2'});
 };
 
 document.querySelector(".current_account").querySelector("p").innerText = "[YourNameHere]"

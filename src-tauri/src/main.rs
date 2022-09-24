@@ -37,7 +37,13 @@ async fn install_modrinth_pack(name: &str, version_id: &str) -> Result<(), Strin
     let instance_slug: String = name
         .trim()
         .chars()
-        .map(|c| if c.is_alphanumeric() { c } else { '_' })
+        .map(|c| {
+            if c.is_alphanumeric() {
+                c.to_ascii_lowercase()
+            } else {
+                '_'
+            }
+        })
         .collect();
 
     let c = Client::builder().build().unwrap();
@@ -48,10 +54,12 @@ async fn install_modrinth_pack(name: &str, version_id: &str) -> Result<(), Strin
         .await
         .unwrap();
 
+    dbg!("Setting instance config");
     set_instance_config(
         &InstanceConfig {
             name: name.to_string(),
             remote: "modrinth".to_owned(),
+            slug: instance_slug.clone(),
             modrinth: Some(modrinth),
             local_file: None,
             launch,
