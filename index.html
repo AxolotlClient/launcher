@@ -33,13 +33,11 @@
                         <p>Settings</p>
                     </button>
                 </div>
-                <div class="account">
-                    <button class="current_account">
-                        <img id="avatar" alt="Skin Head">
-                        <p>YourNameHere</p>
-                        <img src="./assets/arrow_up.svg">
-                    </button>
-                </div>
+                <button class="current_account">
+                    <img id="avatar" alt="Skin Head">
+                    <p>YourNameHere</p>
+                    <img src="./assets/arrow_up.svg">
+                </button>
             </div>
         </div>
     </div>
@@ -48,12 +46,25 @@
             <img src="./assets/exit.svg" width="50px" height="50px" alt="Close Settings">
         </a>-->
         <div class="tabs">
-            <p class="tab_accounts">Accounts</p>
-            <p class="tab_minecraft">Minecraft</p>
-            <p class="tab_mods">Mods</p>
-            <p class="tab_java">Java</p>
-            <p class="tab_launcher">Launcher</p>
-            <br>
+            <a class="tab">
+                <p>Accounts</p>
+            </a>
+                <div class="accounts_container">
+                    <div class="account">Steve</div>
+                    <div class="account">Alex</div>
+                </div>
+            <a class="tab">
+                <p>Minecraft</p>
+            </a>
+            <a class="tab">
+                <p>Mods</p>
+            </a>
+            <a class="tab">
+                <p>Java</p>
+            </a>
+            <a class="tab">
+                <p>Launcher</p>
+            </a>
             <br>
             <a class="close_settings">
                 <p>Done</p>

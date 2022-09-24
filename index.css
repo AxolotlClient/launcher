@@ -166,11 +166,15 @@ button:hover {
 }
 
 .settings_view {
-    display: none;
     position: absolute;
-    top: 0px;
+    top: 100%;
     color: #ffff;
     font-size: 18;
+    transition: top ease-in-out .2s;
+}
+
+.settings_view.visible {
+    top: 0;
 }
 
 .settings_view .tabs {
@@ -187,4 +191,17 @@ button:hover {
 .settings_view p:hover {
     text-shadow: 1px 1px 5px #fff;
     transition: ease-in-out .3s;
+}
+
+.accounts_container {
+    position: absolute;
+    left: 250px;
+}
+
+.account {
+    margin: 5px;
+    padding: 20px;
+    border: solid 2px aqua;
+    border-radius: 12px;
+    width: 200px;
 }
