@@ -6,6 +6,7 @@ playButton.onclick = async() => {
     invoke("launch");
 };
 
+document.querySelector(".current_account").querySelector("p").innerText = "[YourNameHere]"
 document.getElementById("avatar").src = "https://crafatar.com/avatars/[uuid].png";
 
 const instance = document.querySelector(".instance");
@@ -56,18 +57,25 @@ document.body.addEventListener("mouseup", (event) => {
 
 const settingsButton = document.querySelector(".open_settings");
 const main = document.querySelector(".main");
-const settings = document.querySelector(".settings");
+const settings = document.querySelector(".settings_view");
 
 settingsButton.onclick = () => {
-    main.style.display = "none";
-    settings.style.display = "block";
+    //main.style.display = "none";
+    //settings.style.display = "block";
+    settings.classList.toggle("visible");
+    accountSettings.classList.toggle("extended");
     //bg.style.filter = "blur(12px)"; can't really decide on whether to use this or not
 };
 
 const exitButton = document.querySelector(".close_settings");
 
 exitButton.onclick = () => {
-    main.style.display = "block";
-    settings.style.display = "none";
+    //main.style.display = "block";
+    //settings.style.display = "none";
+    settings.classList.toggle("visible");
     //bg.style.filter = "blur(0px)"; can't really decide on whether to use this or not
 };
+
+ document.querySelectorAll(".tab").forEach((p) => p.onClick = () =>{
+    document.querySelectorAll(".tab").classList.toggle("focused")
+ })
