@@ -62,7 +62,7 @@ pub(crate) fn read_from_file(path: &PathBuf) -> Result<String> {
     file.read_to_string(&mut string)?;
     Ok(string)
 }
-fn verify_hash(file: &bytes::Bytes, sha1: &str) -> bool {
+pub(crate) fn verify_hash(file: &bytes::Bytes, sha1: &str) -> bool {
     // todo: actually calculate hash. crypto crates suck.
     // sha1 isnt collision resistant and sha512 may take too long.
     true

@@ -1,13 +1,18 @@
-use std::{env, fs, path::PathBuf};
+use std::{
+    env,
+    fs::{self, File},
+    io::Write,
+    path::PathBuf,
+};
 
-use anyhow::{bail, Context, Result};
-use reqwest::Client;
+use anyhow::{anyhow, bail, Context, Result};
+use reqwest::{Client, StatusCode};
 use semver::VersionReq;
 use serde_json::Value;
 
 use crate::{
     config::{Launch, Modloader, Modrinth},
-    util::{download_file, extract_file, request_file, DataDir},
+    util::{download_file, extract_file, request_file, verify_hash, DataDir},
 };
 
 use super::{launcher::JarPath, mojang_meta::get_minecraft};
@@ -68,6 +73,7 @@ async fn install_modloader(client: &Client, index_json: &Value) -> Result<Launch
             .unwrap();
         let lib_path = maven_download(
             "https://maven.fabricmc.net/",
+            None,
             "net.fabricmc",
             "fabric-loader",
             &fabric_version,
@@ -91,6 +97,7 @@ async fn install_modloader(client: &Client, index_json: &Value) -> Result<Launch
             let mut name = i["name"].as_str().unwrap().split(":");
             let lib_path = maven_download(
                 i["url"].as_str().unwrap(),
+                None,
                 name.next().unwrap(),
                 name.next().unwrap(),
                 name.next().unwrap(),
@@ -116,12 +123,15 @@ async fn install_modloader(client: &Client, index_json: &Value) -> Result<Launch
             _ if cts_req => "https://maven.combatreforged.com/",
             _ => bail!("Unsupported!"),
         };
+        let fallback_maven = "https://maven.fabricmc.net";
+
         let identifier = match &mc_version {
             v if legacy_fabric_req.matches(&v) => "net.legacyfabric",
             _ => "net.fabricmc",
         };
         maven_download(
             intermediary_maven,
+            Some(fallback_maven),
             identifier,
             "intermediary",
             version_string,
@@ -136,6 +146,7 @@ async fn install_modloader(client: &Client, index_json: &Value) -> Result<Launch
         let quilt_version = &index_json["dependencies"]["quilt-loader"].as_str().unwrap();
         let lib_path = maven_download(
             "https://maven.quiltmc.org/repository/release/",
+            None,
             "org.quiltmc",
             "quilt-loader",
             &quilt_version,
@@ -158,6 +169,7 @@ async fn install_modloader(client: &Client, index_json: &Value) -> Result<Launch
             let mut name = i["name"].as_str().unwrap().split(":");
             let lib_path = maven_download(
                 i["url"].as_str().unwrap(),
+                None,
                 name.next().unwrap(),
                 name.next().unwrap(),
                 name.next().unwrap(),
@@ -175,6 +187,7 @@ async fn install_modloader(client: &Client, index_json: &Value) -> Result<Launch
         let identifier = "net.fabricmc";
         let path = maven_download(
             intermediary_maven,
+            None,
             identifier,
             "intermediary",
             version_string,
@@ -252,6 +265,7 @@ pub(crate) async fn fetch_mrpack(version_id: &str, client: &Client) -> Result<(P
 
 async fn maven_download(
     maven_url: &str,
+    fallback_maven_url: Option<&str>,
     identifier: &str,
     name: &str,
     version: &str,
@@ -278,8 +292,37 @@ async fn maven_download(
     let url = maven_url.to_owned() + &path_suffix;
     let path = DataDir::get_library_dir(&path_suffix)?;
     if !path.try_exists()? {
-        download_file(&url, None, &path, Some(&client)).await?;
+        // download file.
+        let response = client
+            .get(url)
+            .header("User-Agent", "github_org/AxolotlClient (me@j0.lol)")
+            .send()
+            .await;
+        let response: reqwest::Response = match response {
+            Ok(r) => r,
+            Err(e)
+                if e.status().ok_or(anyhow!("issue accessing maven!"))?
+                    == StatusCode::NOT_FOUND =>
+            {
+                if fallback_maven_url.is_some() {
+                    let url = fallback_maven_url.unwrap().to_owned() + &path_suffix;
+                    client
+                        .get(url)
+                        .header("User-Agent", "github_org/AxolotlClient (me@j0.lol)")
+                        .send()
+                        .await?
+                } else {
+                    bail!("issue accessing maven!");
+                }
+            }
+            Err(_) => {
+                bail!("issue accessing maven!");
+            }
+        };
+        let content = response.bytes().await?;
+
+        let mut dest = File::create(&path)?;
+        dest.write_all(&content)?;
     }
-    dbg!("hi");
     Ok(path)
 }
